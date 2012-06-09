@@ -1,1 +1,11 @@
-name = Geocluster for drupal 7.
+name = Geocluster
+description = Server-side geo clustering for maps/geofield.
+
+dependencies[] = geofield
+dependencies[] = views_geojson
+
+package = Mapping
+core = "7.x"
+
+files[] = views/geocluster.views.inc
+files[] = views/handlers/geocluster_handler_field_geofield.inc
