@@ -2,7 +2,7 @@ name = Geocluster
 description = Server-side geo clustering for maps/geofield.
 
 dependencies[] = geofield
-dependencies[] = views_geojson
+;dependencies[] = views_geojson
 
 package = Mapping
 core = "7.x"
