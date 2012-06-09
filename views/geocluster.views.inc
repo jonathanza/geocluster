@@ -35,39 +35,11 @@ function geocluster_views_data_alter(&$data) {
 }
 
 /**
- * Implements hook_field_views_data().
- */
-function geocluster_field_views_data($field) {
-  $data = field_views_field_default_views_data($field);
-  $field_name = $field['field_name'];
-
-  foreach ($data as $table_name => $table_data) {
-    if (isset($table_data[$field_name])) {
-      $data[$table_name]['field_geocluster_geofield'] = array(
-        'group' => 'Content',
-        'title'       => $table_data[$field_name]['title'] . ' - clustered',
-        'title short' => $table_data[$field_name]['title'] . ' - clustered',
-        'help' => $table_data[$field_name]['help'],
-        'field' => array(
-          'field' => 'field_geocluster_geofield',
-          'table' => $table_name,
-          'handler' => 'geocluster_handler_field_geofield',
-          'field_name' => $field['field_name'],
-          'real_field' => $table_name,
-          //'float' => TRUE,
-          //'click sortable' => TRUE,
-        ),
-      );
-    }
-  }
-  return $data;
-}
-
-/**
  * Implements hook_views_plugins().
  *
  * Adds GeoJSON feed style.
  */
+/*
 function geocluster_views_plugins() {
   $path = drupal_get_path('module', 'geocluster');
 
@@ -109,3 +81,4 @@ function geocluster_views_plugins() {
   );
   return $plugins;
 }
+*
