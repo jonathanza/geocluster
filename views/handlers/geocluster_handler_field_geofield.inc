@@ -2,7 +2,9 @@
 
 /**
  * @file
- * Distance field implementation.
+ * Geocluster field implementation.
+ *
+ * Based on Geofield, see geocluster_views_data_alter.
  */
 
 class geocluster_handler_field_geofield extends views_handler_field_field {
@@ -30,21 +32,27 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
   function options_validate(&$form, &$form_state) {
   }
 
+  /**
+   * Perform clustering on post_execute for the field handler.
+   *
+   * Runs after the view is executed, before the result is cached.
+   *
+   * @param $values all result rows
+   */
   function post_execute(&$values) {
     geophp_load();
-    $i = 1;
     if (!empty($values)) {
+      // Load entities as the standard views_field_handler does it.
       $entities_by_type = $this->get_entities_by_type($values);
       $entities = $this->load_entities($values, $entities_by_type);
 
+      // Perform clustering.
       foreach ($values as $row_id => &$value) {
-        $geofield = $this->get_geofield_with_geometry($entities, $value);
         foreach ($values as $row_id2 => &$value2) {
           if ($row_id == $row_id2) {
             continue;
           }
-          $geofield2 = $this->get_geofield_with_geometry($entities, $value2);
-          if ($this->shouldCluster($geofield, $geofield2)) {
+          if ($this->shouldCluster($entities, $value, $value2)) {
             $this->addCluster(&$values, $row_id, $row_id2);
           }
         }
@@ -57,6 +65,13 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
     }
   }
 
+  /**
+   * Cluster two given rows.
+   *
+   * @param $values all result rows
+   * @param $row_id the first row to be clustered
+   * @param $row_id2 the second row to be clustered
+   */
   protected function addCluster(&$values, $row_id, $row_id2) {
     $result1 = $values[$row_id];
     $result2 = $values[$row_id2];
@@ -77,11 +92,27 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
     unset($values[$row_id2]);
   }
 
-  protected function shouldCluster($geofield, $geofield2) {
+  /**
+   * Determine if two geofields should be clustered as of their distance.
+   */
+  protected function shouldCluster($entities, $value, $value2) {
+    // Load geofields.
+    $geofield = $this->get_geofield_with_geometry($entities, $value);
+    $geofield2 = $this->get_geofield_with_geometry($entities, $value2);
+    // Calculate distance.
     $distance = geocluster_distance($geofield['geometry'], $geofield2['geometry']);
+    // dpm("distance " . $value->{$this->field_alias} . "/" . $value2->{$this->field_alias} . ": " . $distance);
     return $distance <= $this->options['cluster_distance'];
   }
 
+  /**
+   * Helper function to get the geofield with its geometry for a given result.
+   *
+   * Geometry will only we loaded once and stored in the geofield.
+   *
+   * @param $entities all result entities that have been loaded
+   * @param $value the current result row value set
+   */
   protected function get_geofield_with_geometry($entities, $value) {
      $entity_id = $value->{$this->field_alias};
      $geofield = $entities[$entity_id]->{$this->field_info['field_name']}[LANGUAGE_NONE][0];
@@ -91,8 +122,10 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
      return $geofield;
   }
 
+  /* ### more ### */
 
   /**
+   * @todo: this duplicates existing views functionality, file a patch?
    * see views_handler_field_field::post_execute()
    */
   protected function get_entities_by_type($values) {
@@ -118,6 +151,7 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
   }
 
   /**
+   * @todo: this duplicates existing views functionality, file a patch?
    * see views_handler_field_field::post_execute()
    */
   protected function load_entities(&$values, $entities_by_type) {

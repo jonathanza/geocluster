@@ -1,11 +1,13 @@
 name = Geocluster
-description = Server-side geo clustering for maps/geofield.
-
-dependencies[] = geofield
-;dependencies[] = views_geojson
+description = Server-side geo clustering for mapping/geofield.
 
 package = Mapping
 core = "7.x"
+
+dependencies[] = geofield
+
+; Views GeoJSON integration doesn't exist at the moment.
+;dependencies[] = views_geojson
 
 files[] = views/geocluster.views.inc
 files[] = views/handlers/geocluster_handler_field_geofield.inc

@@ -5,14 +5,20 @@
  * Hooks for Views integration.
  */
 
+/**
+ * Register a geocluster field handler for every geofield.
+ *
+ * Implements hook_views_data_alter().
+ */
 function geocluster_views_data_alter(&$data) {
+  // @todo: load geofield names dynamically.
   $geofields = array(
     'field_data_field_place' => 'field_place'
   );
   foreach ($data as $table_name => $table_data) {
     if (isset($geofields[$table_name])) {
-      $bundle_name = $table_name;
       $field_name = $geofields[$table_name];
+      // Custom geocluster field handler settings.
       $data[$table_name]['field_geocluster_geofield'] = array(
         'group' => 'Content',
         'title'       => $table_data[$field_name]['title'] . ' - clustered',
@@ -26,6 +32,7 @@ function geocluster_views_data_alter(&$data) {
           'real_field' => $table_name,
         ),
       );
+      // Merge custom geocluster field handler settings with default ones.
       $data[$table_name]['field_geocluster_geofield']['field'] = array_merge(
         $data[$table_name][$field_name]['field'],
         $data[$table_name]['field_geocluster_geofield']['field']
@@ -39,7 +46,7 @@ function geocluster_views_data_alter(&$data) {
  *
  * Adds GeoJSON feed style.
  */
-/*
+/* NOT USED AT THE MOMENT
 function geocluster_views_plugins() {
   $path = drupal_get_path('module', 'geocluster');
 
