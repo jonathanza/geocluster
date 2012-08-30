@@ -16,29 +16,29 @@ function geocluster_views_api() {
 }
 
 function geocluster_distance($geometry, $otherGeometry) {
-    $long_1 = $geometry->getX();
-    $lat_1 = $geometry->getY();
+  $long_1 = $geometry->getX();
+  $lat_1 = $geometry->getY();
 
-    $long_2 = $otherGeometry->getX();
-    $lat_2 = $otherGeometry->getY();
+  $long_2 = $otherGeometry->getX();
+  $lat_2 = $otherGeometry->getY();
 
-    // see http://blog.voltampmedia.com/2011/12/17/php-implementation-of-haversine-computation/
+  // see http://blog.voltampmedia.com/2011/12/17/php-implementation-of-haversine-computation/
 
-    // $earth_radius = 3963.1676; // in miles
-    $earth_radius = 6353; // in km
+  // $earth_radius = 3963.1676; // in miles
+  $earth_radius = 6353; // in km
 
-    $sin_lat   = sin(deg2rad($lat_2  - $lat_1)  / 2.0);
-    $sin2_lat  = $sin_lat * $sin_lat;
+  $sin_lat   = sin(deg2rad($lat_2  - $lat_1)  / 2.0);
+  $sin2_lat  = $sin_lat * $sin_lat;
 
-    $sin_long  = sin(deg2rad($long_2 - $long_2) / 2.0);
-    $sin2_long = $sin_long * $sin_long;
+  $sin_long  = sin(deg2rad($long_2 - $long_2) / 2.0);
+  $sin2_long = $sin_long * $sin_long;
 
-    $cos_lat_1 = cos($lat_1);
-    $cos_lat_2 = cos($lat_2);
+  $cos_lat_1 = cos($lat_1);
+  $cos_lat_2 = cos($lat_2);
 
-    $sqrt      = sqrt($sin2_lat + ($cos_lat_1 * $cos_lat_2 * $sin2_long));
+  $sqrt      = sqrt($sin2_lat + ($cos_lat_1 * $cos_lat_2 * $sin2_long));
 
-    $distance  = 2.0 * $earth_radius * asin($sqrt);
+  $distance  = 2.0 * $earth_radius * asin($sqrt);
 
-    return $distance;
-  }
+  return $distance;
+}

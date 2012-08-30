@@ -88,6 +88,11 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
     $cluster->node_title .= ' + ' . $result2->node_title;
     $cluster->ids += array($result2->{$this->field_alias});
 
+    // @todo: set centroid
+    //$geofield = $this->get_geofield_with_geometry($entities, $value);
+    //$geofield2 = $this->get_geofield_with_geometry($entities, $value2);
+    //$geofield['geometry']->
+
     // @todo: calculate and set cluster center
     unset($values[$row_id2]);
   }
@@ -117,10 +122,16 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
      $entity_id = $value->{$this->field_alias};
      $geofield = $entities[$entity_id]->{$this->field_info['field_name']}[LANGUAGE_NONE][0];
      if (!isset($geofield['geometry'])) {
-       $geofield['geometry'] = geoPHP::load($geofield['wkt'], 'wkt');
+       $geofield['geometry'] = geoPHP::load($geofield['geom'], 'wkb');
      }
      return $geofield;
   }
+
+
+
+
+
+
 
   /* ### more ### */
 
