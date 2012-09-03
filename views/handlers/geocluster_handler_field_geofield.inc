@@ -124,6 +124,9 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
      if (!isset($geofield['geometry'])) {
        $geofield['geometry'] = geoPHP::load($geofield['geom'], 'wkb');
      }
+    if (!isset($geofield['geohash'])) {
+      $geofield['geohash'] = $geofield['geometry']->out('geohash');
+    }
      return $geofield;
   }
 
