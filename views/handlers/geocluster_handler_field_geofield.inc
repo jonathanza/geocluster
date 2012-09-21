@@ -9,10 +9,12 @@
 
 class geocluster_handler_field_geofield extends views_handler_field_field {
 
+  var $resolution;
+
   function option_definition() {
     $options = parent::option_definition();
     $more_options['cluster_distance'] = array(
-      'default' => 10,
+      'default' => 15,
     );
     $options = $more_options + $options;
     return $options;
@@ -40,20 +42,27 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
    * @param $values all result rows
    */
   function post_execute(&$values) {
+    // return parent::post_execute($values);
+
+    $style_options = $this->view->display_handler->display->display_options['style_options'];
+    $zoom = $style_options['geofield_map_zoom'];
+    $resolutions = geocluster_resolutions();
+    $this->resolution = $resolutions[$zoom];
+
     geophp_load();
     if (!empty($values)) {
       // Load entities as the standard views_field_handler does it.
-      $entities_by_type = $this->get_entities_by_type($values);
-      $entities = $this->load_entities($values, $entities_by_type);
+      $this->load_entities($values);
 
       // Perform clustering.
-      foreach ($values as $row_id => &$value) {
-        foreach ($values as $row_id2 => &$value2) {
-          if ($row_id == $row_id2) {
-            continue;
-          }
-          if ($this->shouldCluster($entities, $value, $value2)) {
-            $this->addCluster(&$values, $row_id, $row_id2);
+      for($i = 0; $i < count($values); $i++) {
+        $value = &$values[$i];
+
+        for($j = $i+1; $j < count($values); $j++) {
+          $value2 = &$values[$j];
+
+          if ($this->shouldCluster($values, $value, $value2)) {
+            $this->addCluster(&$values, $i, $j);
           }
         }
       }
@@ -88,9 +97,11 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
     $cluster->node_title .= ' + ' . $result2->node_title;
     $cluster->ids += array($result2->{$this->field_alias});
 
-    // @todo: set centroid
-    //$geofield = $this->get_geofield_with_geometry($entities, $value);
-    //$geofield2 = $this->get_geofield_with_geometry($entities, $value2);
+    $geofield = $this->get_geofield_with_geometry($result1);
+    $geofield2 = $this->get_geofield_with_geometry($result2);
+    $cluster = new MultiPoint(array($geofield['geometry'], $geofield2['geometry']));
+    dpm($cluster);
+    dpm($cluster->centroid());
     //$geofield['geometry']->
 
     // @todo: calculate and set cluster center
@@ -100,13 +111,13 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
   /**
    * Determine if two geofields should be clustered as of their distance.
    */
-  protected function shouldCluster($entities, $value, $value2) {
+  protected function shouldCluster($values, $value, $value2) {
     // Load geofields.
-    $geofield = $this->get_geofield_with_geometry($entities, $value);
-    $geofield2 = $this->get_geofield_with_geometry($entities, $value2);
+    $geofield = $this->get_geofield_with_geometry($value);
+    $geofield2 = $this->get_geofield_with_geometry($value2);
+
     // Calculate distance.
-    $distance = geocluster_distance($geofield['geometry'], $geofield2['geometry']);
-    // dpm("distance " . $value->{$this->field_alias} . "/" . $value2->{$this->field_alias} . ": " . $distance);
+    $distance = geocluster_distance_pixels($geofield['geometry'], $geofield2['geometry'], $this->resolution);
     return $distance <= $this->options['cluster_distance'];
   }
 
@@ -118,16 +129,17 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
    * @param $entities all result entities that have been loaded
    * @param $value the current result row value set
    */
-  protected function get_geofield_with_geometry($entities, $value) {
-     $entity_id = $value->{$this->field_alias};
-     $geofield = $entities[$entity_id]->{$this->field_info['field_name']}[LANGUAGE_NONE][0];
-     if (!isset($geofield['geometry'])) {
-       $geofield['geometry'] = geoPHP::load($geofield['geom'], 'wkb');
-     }
+  protected function get_geofield_with_geometry($value) {
+    $entity = $value->_field_data[$this->field_alias]['entity'];
+
+    $geofield = $entity->{$this->field_info['field_name']}[LANGUAGE_NONE][0];
+    if (!isset($geofield['geometry'])) {
+      $geofield['geometry'] = geoPHP::load($geofield['geom'], 'wkb');
+    }
     if (!isset($geofield['geohash'])) {
       $geofield['geohash'] = $geofield['geometry']->out('geohash');
     }
-     return $geofield;
+    return $geofield;
   }
 
 
@@ -142,7 +154,7 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
    * @todo: this duplicates existing views functionality, file a patch?
    * see views_handler_field_field::post_execute()
    */
-  protected function get_entities_by_type($values) {
+  protected function load_entities(&$values) {
     // Divide the entity ids by entity type, so they can be loaded in bulk.
     $entities_by_type = array();
     $revisions_by_type = array();
@@ -161,14 +173,7 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
       }
     }
 
-    return $entities_by_type;
-  }
-
-  /**
-   * @todo: this duplicates existing views functionality, file a patch?
-   * see views_handler_field_field::post_execute()
-   */
-  protected function load_entities(&$values, $entities_by_type) {
+    $entities = array();
     foreach ($entities_by_type as $entity_type => $entity_ids) {
       $entity_info = entity_get_info($entity_type);
       if (empty($this->definition['is revision'])) {
@@ -178,7 +183,6 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
       else {
         // Revisions can't be loaded multiple, so we have to load them
         // one by one.
-        $entities = array();
         $keys = array();
         foreach ($entity_ids as $key => $combined) {
           list($entity_id, $revision_id) = $combined;
