@@ -82,10 +82,10 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
    * @param $row_id2 the second row to be clustered
    */
   protected function addCluster(&$values, $row_id, $row_id2) {
-    $result1 = $values[$row_id];
-    $result2 = $values[$row_id2];
+    $result1 = &$values[$row_id];
+    $result2 = &$values[$row_id2];
 
-    $cluster = $result1;
+    $cluster = &$result1;
     // @todo: make a real cluster, currently it still links to the first result.
     if (!isset($cluster->clustered)) {
       $cluster->node_title = 'Cluster: ' . $result1->node_title;
@@ -97,14 +97,11 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
     $cluster->node_title .= ' + ' . $result2->node_title;
     $cluster->ids += array($result2->{$this->field_alias});
 
-    $geofield = $this->get_geofield_with_geometry($result1);
-    $geofield2 = $this->get_geofield_with_geometry($result2);
-    $cluster = new MultiPoint(array($geofield['geometry'], $geofield2['geometry']));
-    dpm($cluster);
-    dpm($cluster->centroid());
-    //$geofield['geometry']->
+    $geofield = &$this->get_geofield_with_geometry($result1);
+    $geofield2 = &$this->get_geofield_with_geometry($result2);
+    $center = new MultiPoint(array($geofield['geometry'], $geofield2['geometry']));
 
-    // @todo: calculate and set cluster center
+    $geofield = geofield_get_values_from_geometry($center->centroid());
     unset($values[$row_id2]);
   }
 
@@ -129,10 +126,10 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
    * @param $entities all result entities that have been loaded
    * @param $value the current result row value set
    */
-  protected function get_geofield_with_geometry($value) {
-    $entity = $value->_field_data[$this->field_alias]['entity'];
+  protected function &get_geofield_with_geometry(&$value) {
+    $entity = &$value->_field_data[$this->field_alias]['entity'];
 
-    $geofield = $entity->{$this->field_info['field_name']}[LANGUAGE_NONE][0];
+    $geofield = &$entity->{$this->field_info['field_name']}[LANGUAGE_NONE][0];
     if (!isset($geofield['geometry'])) {
       $geofield['geometry'] = geoPHP::load($geofield['geom'], 'wkb');
     }
