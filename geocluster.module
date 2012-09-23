@@ -30,6 +30,4 @@ function geocluster_views_post_execute_query(&$view) {
 
   $cluster = new Geocluster($zoom, $field);
   $cluster->cluster($view);
-  dpm($view);
-
 }
