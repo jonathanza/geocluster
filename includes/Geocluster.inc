@@ -17,7 +17,13 @@ class Geocluster {
    */
   var $resolution;
 
-  function __construct($zoom, $field_handler) {
+  var $zoom_level;
+
+  var $cluster_distance;
+
+  function __construct($cluster_distance, $zoom, $field_handler) {
+    $this->cluster_distance = $cluster_distance;
+    $this->zoom_level = $zoom;
     $resolutions = GeoclusterHelper::resolutions();
     $this->resolution = $resolutions[$zoom];
     $this->field_handler = $field_handler;
@@ -31,13 +37,66 @@ class Geocluster {
    * @param $view View containing the result set to cluster.
    */
   public function cluster(&$view) {
-    $entities_by_type = $this->entities_by_type($view->result);
-    $entities = $this->load_entity_fields($entities_by_type, $view->result);
-
-    $values = &$view->result;
 
     geophp_load();
 
+    $entities_by_type = $this->entities_by_type($view->result);
+    $entities_by_geohash = $this->load_entity_fields($entities_by_type, $view->result);
+
+    $values = &$view->result;
+
+    if(TRUE) {
+      // Geohash-based sort algorithm.
+      $this->geohashSort($entities_by_geohash, $values);
+    }
+    else {
+      // Simple sort algorithm.
+      $this->simpleSort($values);
+    }
+
+
+
+  }
+
+  function geohashSort($entities_by_geohash, &$values) {
+    foreach ($entities_by_geohash as $current_hash => &$entities) {
+      $cluster = NULL;
+
+      // Add all points within the core geohash to a cluster.
+      foreach ($entities_by_geohash[$current_hash] as $key => &$entity) {
+
+        if (!isset($cluster)) {
+          $cluster = $entity;
+          $cluster_id = $key;
+        }
+        else {
+          $this->addCluster($values, $cluster_id, $key);
+          unset($entities_by_geohash[$current_hash][$key]);
+          if (count($entities_by_geohash[$current_hash]) == 0) {
+            unset($entities_by_geohash[$current_hash]);
+          }
+        }
+      }
+
+      // Check neighbor hashes for overlapping points.
+      $hash_stack = GeoHashUtils::getNeighbors($current_hash);
+      foreach ($hash_stack as $hash) {
+        if (isset($entities_by_geohash[$hash])) {
+          foreach ($entities_by_geohash[$hash] as $key => &$entity) {
+            if ($this->shouldCluster($values, $values[$cluster_id], $values[$key])) {
+              $this->addCluster($values, $cluster_id, $key);
+              unset($entities_by_geohash[$hash][$key]);
+              if (count($entities_by_geohash[$hash]) == 0) {
+                unset($entities_by_geohash[$hash]);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  function simpleSort(&$values) {
     // Perform clustering.
     for($i = 0; $i < count($values); $i++) {
       $value = &$values[$i];
@@ -89,7 +148,6 @@ class Geocluster {
    * Determine if two geofields should be clustered as of their distance.
    */
   protected function shouldCluster($values, $value, $value2) {
-    return TRUE;
 
     $field_alias = $this->field_handler->field_alias;
 
@@ -99,7 +157,7 @@ class Geocluster {
 
     // Calculate distance.
     $distance = GeoclusterHelper::distance_pixels($geofield['geometry'], $geofield2['geometry'], $this->resolution);
-    return $distance <= $this->options['cluster_distance'];
+    return $distance <= $this->cluster_distance;
   }
 
   /**
@@ -145,6 +203,9 @@ class Geocluster {
       // @todo handle revisions?
 
       $keys = $my_entities;
+      $entities_by_geohash = array();
+      $geohash_length = GeoclusterHelper::geohash_length_from_zoom_level($this->zoom_level);
+
       foreach ($keys as $key => $entity_id) {
         // If this is a revision, load the revision instead.
         if (isset($entities[$entity_id])) {
@@ -152,11 +213,18 @@ class Geocluster {
             'entity_type' => $entity_type,
             'entity' => $entities[$entity_id],
           );
+
+          $geofield = $this->get_geofield_with_geometry($values[$key]);
+          $geohash_key = substr($geofield['geohash'], 0, $geohash_length);
+          if (!isset($entities_by_geohash[$geohash_key])) {
+            $entities_by_geohash[$geohash_key] = array();
+          }
+          $entities_by_geohash[$geohash_key][$key] = $entities[$entity_id];
         }
       }
     }
-
-    return $entities;
+    asort($entities_by_geohash);
+    return $entities_by_geohash;
   }
 
   /**

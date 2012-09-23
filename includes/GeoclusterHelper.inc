@@ -87,6 +87,11 @@ class GeoclusterHelper {
     return array('x' => $x, 'y' => $y);
   }
 
+  public static function geohash_length_from_zoom_level($zoom) {
+    //todo: implement.
+    return 4;
+  }
+
   /*
   function geocluster_distance_simple2($geometry, $otherGeometry) {
     $point = geocluster_forward_mercator($geometry->getX(), $geometry->getY());

@@ -32,7 +32,26 @@ function geocluster_views_post_execute_query(&$view) {
 
   $style_options = $view->display_handler->display->display_options['style_options'];
   $zoom = $style_options['geofield_map_zoom'];
+  $cluster_distance = $field->options['cluster_distance'];
 
-  $cluster = new Geocluster($zoom, $field);
+  $cluster = new Geocluster($cluster_distance, $zoom, $field);
   $cluster->cluster($view);
+}
+
+/**
+ * Invokes clustering after the views query has been executed.
+ *
+ * Implements hook_views_post_execute_query.
+ */
+function geocluster_views_object_types_alter(&$object_types) {
+  $object_types = array(
+    'cluster' => array(
+      'title' => t('Cluster behavior'),
+      'ltitle' => t('cluster behavior'),
+      'stitle' => t('Cluster behavior'),
+      'lstitle' => t('Cluster behavior'),
+      'plural' => 'cluster',
+    ),
+  ) + $object_types;
+  return $object_types;
 }
