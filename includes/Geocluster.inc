@@ -7,9 +7,15 @@
 
 class Geocluster {
 
-  var $resolution;
-
+  /**
+   * @var Geofield (geocluster) field handler on which to perform clustering.
+   */
   var $field_handler;
+
+  /**
+   * @var current zoom resolution for clustering.
+   */
+  var $resolution;
 
   function __construct($zoom, $field_handler) {
     $resolutions = GeoclusterHelper::resolutions();
@@ -17,6 +23,13 @@ class Geocluster {
     $this->field_handler = $field_handler;
   }
 
+  /**
+   * Perform clustering on a given views result set.
+   *
+   * This should be called from a hook_views_post_execute_query() implementation.
+   *
+   * @param $view View containing the result set to cluster.
+   */
   public function cluster(&$view) {
     $entities_by_type = $this->entities_by_type($view->result);
     $entities = $this->load_entity_fields($entities_by_type, $view->result);
@@ -146,8 +159,6 @@ class Geocluster {
     return $entities;
   }
 
-
-
   /**
    * Helper function to get the geofield with its geometry for a given result.
    *
@@ -168,6 +179,4 @@ class Geocluster {
     }
     return $geofield;
   }
-
-
 }
