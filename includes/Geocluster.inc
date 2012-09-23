@@ -8,6 +8,10 @@
 class Geocluster {
 
   /**
+   * @todo: don't rely on a custom field handler,
+   * use another type of views plugin instead.
+   * we might want to make views_object_types() pluggable?
+   *
    * @var Geofield (geocluster) field handler on which to perform clustering.
    */
   var $field_handler;
