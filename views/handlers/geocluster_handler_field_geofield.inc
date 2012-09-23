@@ -46,7 +46,7 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
 
     $style_options = $this->view->display_handler->display->display_options['style_options'];
     $zoom = $style_options['geofield_map_zoom'];
-    $resolutions = geocluster_resolutions();
+    $resolutions = GeoclusterHelper::resolutions();
     $this->resolution = $resolutions[$zoom];
 
     geophp_load();
@@ -72,6 +72,10 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
         $value->{'field_' . $this->options['id']} = $this->set_items($value, $row_id);
       }
     }
+  }
+
+  function get_value($values, $field = NULL) {
+    return parent::get_value($values, $field);
   }
 
   /**
@@ -114,7 +118,7 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
     $geofield2 = $this->get_geofield_with_geometry($value2);
 
     // Calculate distance.
-    $distance = geocluster_distance_pixels($geofield['geometry'], $geofield2['geometry'], $this->resolution);
+    $distance = GeoclusterHelper::distance_pixels($geofield['geometry'], $geofield2['geometry'], $this->resolution);
     return $distance <= $this->options['cluster_distance'];
   }
 
