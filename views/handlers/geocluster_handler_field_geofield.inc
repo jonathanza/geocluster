@@ -9,8 +9,6 @@
 
 class geocluster_handler_field_geofield extends views_handler_field_field {
 
-  var $resolution;
-
   function option_definition() {
     $options = parent::option_definition();
     $more_options['cluster_distance'] = array(
@@ -42,30 +40,18 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
    * @param $values all result rows
    */
   function post_execute(&$values) {
-    // return parent::post_execute($values);
+    return parent::post_execute($values);
 
     $style_options = $this->view->display_handler->display->display_options['style_options'];
     $zoom = $style_options['geofield_map_zoom'];
-    $resolutions = GeoclusterHelper::resolutions();
-    $this->resolution = $resolutions[$zoom];
 
-    geophp_load();
+    $geocluster = new Geocluster((int)$zoom);
+
     if (!empty($values)) {
       // Load entities as the standard views_field_handler does it.
       $this->load_entities($values);
 
-      // Perform clustering.
-      for($i = 0; $i < count($values); $i++) {
-        $value = &$values[$i];
-
-        for($j = $i+1; $j < count($values); $j++) {
-          $value2 = &$values[$j];
-
-          if ($this->shouldCluster($values, $value, $value2)) {
-            $this->addCluster(&$values, $i, $j);
-          }
-        }
-      }
+      $geocluster->cluster($values);
 
       // Now, transfer the data back into the resultset so it can be easily used.
       foreach ($values as $row_id => &$value) {
@@ -77,77 +63,6 @@ class geocluster_handler_field_geofield extends views_handler_field_field {
   function get_value($values, $field = NULL) {
     return parent::get_value($values, $field);
   }
-
-  /**
-   * Cluster two given rows.
-   *
-   * @param $values all result rows
-   * @param $row_id the first row to be clustered
-   * @param $row_id2 the second row to be clustered
-   */
-  protected function addCluster(&$values, $row_id, $row_id2) {
-    $result1 = &$values[$row_id];
-    $result2 = &$values[$row_id2];
-
-    $cluster = &$result1;
-    // @todo: make a real cluster, currently it still links to the first result.
-    if (!isset($cluster->clustered)) {
-      $cluster->node_title = 'Cluster: ' . $result1->node_title;
-      $cluster->ids = array(
-        $result1->{$this->field_alias}
-      );
-      $cluster->clustered = TRUE;
-    }
-    $cluster->node_title .= ' + ' . $result2->node_title;
-    $cluster->ids += array($result2->{$this->field_alias});
-
-    $geofield = &$this->get_geofield_with_geometry($result1);
-    $geofield2 = &$this->get_geofield_with_geometry($result2);
-    $center = new MultiPoint(array($geofield['geometry'], $geofield2['geometry']));
-
-    $geofield = geofield_get_values_from_geometry($center->centroid());
-    unset($values[$row_id2]);
-  }
-
-  /**
-   * Determine if two geofields should be clustered as of their distance.
-   */
-  protected function shouldCluster($values, $value, $value2) {
-    // Load geofields.
-    $geofield = $this->get_geofield_with_geometry($value);
-    $geofield2 = $this->get_geofield_with_geometry($value2);
-
-    // Calculate distance.
-    $distance = GeoclusterHelper::distance_pixels($geofield['geometry'], $geofield2['geometry'], $this->resolution);
-    return $distance <= $this->options['cluster_distance'];
-  }
-
-  /**
-   * Helper function to get the geofield with its geometry for a given result.
-   *
-   * Geometry will only we loaded once and stored in the geofield.
-   *
-   * @param $entities all result entities that have been loaded
-   * @param $value the current result row value set
-   */
-  protected function &get_geofield_with_geometry(&$value) {
-    $entity = &$value->_field_data[$this->field_alias]['entity'];
-
-    $geofield = &$entity->{$this->field_info['field_name']}[LANGUAGE_NONE][0];
-    if (!isset($geofield['geometry'])) {
-      $geofield['geometry'] = geoPHP::load($geofield['geom'], 'wkb');
-    }
-    if (!isset($geofield['geohash'])) {
-      $geofield['geohash'] = $geofield['geometry']->out('geohash');
-    }
-    return $geofield;
-  }
-
-
-
-
-
-
 
   /* ### more ### */
 

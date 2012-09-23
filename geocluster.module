@@ -16,10 +16,20 @@ function geocluster_views_api() {
 }
 
 function geocluster_views_post_execute_query(&$view) {
-  foreach ($view->field as $key => $field) {
-    if ($field->definition['handler'] == 'geocluster_handler_field_geofield') {
-      dpm($view);
-      dpm($field);
+  foreach ($view->field as $key => $my_field) {
+    if ($my_field->definition['handler'] == 'geocluster_handler_field_geofield') {
+      $field = $my_field;
     }
   }
+  if (!isset($field)) {
+    return;
+  }
+
+  $style_options = $view->display_handler->display->display_options['style_options'];
+  $zoom = $style_options['geofield_map_zoom'];
+
+  $cluster = new Geocluster($zoom, $field);
+  $cluster->cluster($view);
+  dpm($view);
+
 }
