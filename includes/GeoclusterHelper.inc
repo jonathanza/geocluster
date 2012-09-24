@@ -97,6 +97,8 @@ class GeoclusterHelper {
    *
    * based on https://github.com/mapbox/clustr/blob/gh-pages/src/clustr.js
    *
+   * also see http://dev.openlayers.org/docs/files/OpenLayers/Layer/SphericalMercator-js.html
+   *
    * @static
    * @param $lat
    * @param $lon
@@ -113,6 +115,8 @@ class GeoclusterHelper {
    * Convert from meters (Spherical Mercator) to degrees (EPSG:4326).
    *
    *  based on https://github.com/mapbox/clustr/blob/gh-pages/src/clustr.js
+   *
+   *  also see http://dev.openlayers.org/docs/files/OpenLayers/Layer/SphericalMercator-js.html
    *
    * @static
    * @param $x
