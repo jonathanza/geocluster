@@ -102,7 +102,7 @@ class GeoclusterHelper {
    * @param $lon
    * @return array
    */
-  static function forward_mercator($lat, $lon) {
+  static function forward_mercator($lon, $lat) {
     $x = $lon * 20037508.34 / 180;
     $y =log(tan((90 + $lat) * pi() / 360)) / (pi() / 180);
     $y = $y * 20037508.34 / 180;
@@ -110,14 +110,14 @@ class GeoclusterHelper {
   }
 
   /**
-   * Convert from meters to degrees.
+   * Convert from meters (Spherical Mercator) to degrees (EPSG:4326).
    *
    *  based on https://github.com/mapbox/clustr/blob/gh-pages/src/clustr.js
    *
    * @static
    * @param $x
    * @param $y
-   * @return array
+   * @return array (lon, lat)
    */
   static function backwardMercator($x, $y) {
     $R2D = 180 / pi();

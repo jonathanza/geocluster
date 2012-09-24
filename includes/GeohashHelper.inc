@@ -19,9 +19,9 @@ class GeohashHelper {
   static function lengthFromDistance($cluster_distance, $resolution) {
     $cluster_distance_meters = $cluster_distance * $resolution;
     $x = $y = $cluster_distance_meters;
-    list($height, $width) = GeoclusterHelper::backwardMercator($x, $y);
+    list($width, $height) = GeoclusterHelper::backwardMercator($x, $y);
 
-    $hashLen = GeohashHelper::lookupHashLenForWidthHeight($height, $width);
+    $hashLen = GeohashHelper::lookupHashLenForWidthHeight($width, $height);
     return $hashLen;
   }
 
