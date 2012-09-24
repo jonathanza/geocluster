@@ -17,7 +17,9 @@ class Geocluster {
   var $field_handler;
 
   /**
-   * @var current zoom resolution for clustering.
+   * @var current zoom resolution for clustering in meters / pixel.
+   *
+   * @see GeoclusterHelper::resultions().
    */
   var $resolution;
 
@@ -83,7 +85,7 @@ class Geocluster {
       }
 
       // Check neighbor hashes for overlapping points.
-      $hash_stack = GeoHashUtils::getNeighbors($current_hash);
+      $hash_stack = GeohashHelper::getNeighbors($current_hash);
       foreach ($hash_stack as $hash) {
         if (isset($entities_by_geohash[$hash])) {
           foreach ($entities_by_geohash[$hash] as $key => &$entity) {
@@ -208,7 +210,7 @@ class Geocluster {
 
       $keys = $my_entities;
       $entities_by_geohash = array();
-      $geohash_length = GeoclusterHelper::geohash_length_from_zoom_level($this->zoom_level);
+      $geohash_length = GeohashHelper::lengthFromDistance($this->cluster_distance, $this->resolution);
 
       foreach ($keys as $key => $entity_id) {
         // If this is a revision, load the revision instead.

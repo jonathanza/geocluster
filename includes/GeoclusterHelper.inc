@@ -19,6 +19,7 @@ class GeoclusterHelper {
    * @return array An array of resolutions indexed by zoom levels.
    */
   static function resolutions() {
+    // @todo: static, cache?
     $r = array();
     // Meters per pixel.
     // $maxResolution = 156543.03390625;
@@ -91,7 +92,16 @@ class GeoclusterHelper {
     return $d;
   }
 
-  // see https://github.com/mapbox/clustr/blob/gh-pages/src/clustr.js
+  /**
+   * Convert from degrees to meters.
+   *
+   * based on https://github.com/mapbox/clustr/blob/gh-pages/src/clustr.js
+   *
+   * @static
+   * @param $lat
+   * @param $lon
+   * @return array
+   */
   static function forward_mercator($lat, $lon) {
     $x = $lon * 20037508.34 / 180;
     $y =log(tan((90 + $lat) * pi() / 360)) / (pi() / 180);
@@ -99,9 +109,23 @@ class GeoclusterHelper {
     return array('x' => $x, 'y' => $y);
   }
 
-  public static function geohash_length_from_zoom_level($zoom) {
-    //todo: implement.
-    return 4;
+  /**
+   * Convert from meters to degrees.
+   *
+   *  based on https://github.com/mapbox/clustr/blob/gh-pages/src/clustr.js
+   *
+   * @static
+   * @param $x
+   * @param $y
+   * @return array
+   */
+  static function backwardMercator($x, $y) {
+    $R2D = 180 / pi();
+    $A = 6378137;
+    return array(
+      $x * $R2D / $A,
+      ((pi() * 0.5) - 2.0 * atan(exp(-$y / $A))) * $R2D
+    );
   }
 
   /*

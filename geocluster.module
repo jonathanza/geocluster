@@ -38,11 +38,13 @@ function geocluster_views_post_execute_query(&$view) {
   $cluster->cluster($view);
 }
 
+
 /**
  * Invokes clustering after the views query has been executed.
  *
  * Implements hook_views_post_execute_query.
  */
+/*
 function geocluster_views_object_types_alter(&$object_types) {
   $object_types = array(
     'cluster' => array(
@@ -55,3 +57,4 @@ function geocluster_views_object_types_alter(&$object_types) {
   ) + $object_types;
   return $object_types;
 }
+*/
