@@ -95,19 +95,19 @@ class GeoclusterHelper {
   /**
    * Convert from degrees to meters.
    *
-   * based on https://github.com/mapbox/clustr/blob/gh-pages/src/clustr.js
-   *
-   * also see http://dev.openlayers.org/docs/files/OpenLayers/Layer/SphericalMercator-js.html
+   * based on
+   * http://dev.openlayers.org/docs/files/OpenLayers/Layer/SphericalMercator-js.html
+   * https://github.com/openlayers/openlayers/blob/master/lib/OpenLayers/Projection.js#L278
    *
    * @static
    * @param $lat
    * @param $lon
    * @return array
    */
-  static function forward_mercator($lon, $lat) {
-    $x = $lon * 20037508.34 / 180;
-    $y =log(tan((90 + $lat) * pi() / 360)) / (pi() / 180);
-    $y = $y * 20037508.34 / 180;
+  static function forwardMercator($lon, $lat) {
+    $pole = 20037508.34;
+    $x = $lon * $pole / 180;
+    $y = log(tan((90 + $lat) * pi() / 360)) / pi() * $pole;
     return array('x' => $x, 'y' => $y);
   }
 
@@ -116,7 +116,9 @@ class GeoclusterHelper {
    *
    *  based on https://github.com/mapbox/clustr/blob/gh-pages/src/clustr.js
    *
-   *  also see http://dev.openlayers.org/docs/files/OpenLayers/Layer/SphericalMercator-js.html
+   *  also see
+   *  http://dev.openlayers.org/docs/files/OpenLayers/Layer/SphericalMercator-js.html
+   *  https://github.com/openlayers/openlayers/blob/master/lib/OpenLayers/Projection.js#L278
    *
    * @static
    * @param $x
