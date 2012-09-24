@@ -23,7 +23,6 @@ class GeoclusterHelper {
     $maxResolution = 156543.03390625;
     $maxResolution = GEOFIELD_KILOMETERS * 1000 / 256;
     // see http://wiki.openstreetmap.org/wiki/Zoom_levels
-    // @todo: incorporate variation with latitude on the mercator projection.
     $maxResolution = 156.412 * 1000;
     for($zoom = 0; $zoom <= 30; ++$zoom) {
         $r[$zoom] = $maxResolution / pow(2, $zoom);
@@ -35,7 +34,9 @@ class GeoclusterHelper {
    * Dumb implementation to incorporate pixel variation with latitude
    * on the mercator projection.
    *
-   * Observation:
+   * @todo: use a valid implementation instead of the current guessing.
+   *
+   * Current implementation is based on the observation:
    * lat = 0 => output is correct
    * lat = 48 => output is 223 pixels distance instead of 335 in reality.
    *
