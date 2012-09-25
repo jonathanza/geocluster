@@ -140,7 +140,17 @@ class Geocluster {
       $cluster->clustered = TRUE;
     }
     $cluster->node_title .= ' + ' . $result2->node_title;
-    $cluster->ids += array($result2->{$field_alias});
+
+    if (isset($result2->{$field_alias})) {
+      $cluster->ids += array($result2->{$field_alias});
+    }
+    else {
+      $cluster->ids += $result2->ids;
+    }
+    // Avoid cluster being treated as a normal item.
+    if (isset($cluster->{$field_alias})) {
+      unset($cluster->{$field_alias});
+    }
 
     $geofield = &$this->get_geofield_with_geometry($result1, $field_alias);
     $geofield2 = &$this->get_geofield_with_geometry($result2, $field_alias);
