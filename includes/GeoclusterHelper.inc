@@ -23,7 +23,8 @@ class GeoclusterHelper {
     $r = array();
     // Meters per pixel.
     // $maxResolution = 156543.03390625;
-    $maxResolution = GEOFIELD_KILOMETERS * 1000 / 256;
+    $tile_size = 256;
+    $maxResolution = GEOFIELD_KILOMETERS * 1000 / $tile_size;
     $maxResolution = 156.412 * 1000;
     for($zoom = 0; $zoom <= 30; ++$zoom) {
         $r[$zoom] = $maxResolution / pow(2, $zoom);
