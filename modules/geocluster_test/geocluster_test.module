@@ -12,8 +12,12 @@ function geocluster_test_leaflet_map_info() {
     array(
       'label' => 'local control',
       'description' => t(''),
+      'center' => array(
+        'lon' => 14.32411,
+        'lat' => 47.88101
+      ),
       'settings' => array(
-        'zoom' => 4,
+        'zoom' => 7,
         'minZoom' => 0,
         'maxZoom' => 8,
         'dragging' => TRUE,

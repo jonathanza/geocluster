@@ -21,6 +21,7 @@ function geocluster_views_api() {
  * Implements hook_views_post_execute_query.
  */
 function geocluster_views_post_execute_query(&$view) {
+
   foreach ($view->field as $key => $my_field) {
     if ($my_field->definition['handler'] == 'geocluster_handler_field_geofield') {
       $field = $my_field;
@@ -30,9 +31,18 @@ function geocluster_views_post_execute_query(&$view) {
     return;
   }
 
-  $style_options = $view->display_handler->display->display_options['style_options'];
-  $zoom = $style_options['geofield_map_zoom'];
   $cluster_distance = $field->options['cluster_distance'];
+
+  if ($view->style_plugin->plugin_name == 'leaflet') {
+    $map = $view->style_plugin->options['map'];
+    $info =  leaflet_map_get_info($map);
+    $zoom = $info['settings']['zoom'];
+  }
+  else {
+    // geofield_map
+    $style_options = $view->display_handler->display->display_options['style_options'];
+    $zoom = $style_options['geofield_map_zoom'];
+  }
 
   $cluster = new Geocluster($cluster_distance, $zoom, $field);
   $cluster->cluster($view);
