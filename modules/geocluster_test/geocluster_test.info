@@ -1,0 +1,10 @@
+name = Geocluster Test
+description =
+
+package = Mapping
+core = "7.x"
+
+dependencies[] = geocluster
+dependencies[] = leaflet
+
+
