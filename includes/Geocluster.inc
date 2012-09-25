@@ -65,6 +65,13 @@ class Geocluster {
     $geohash_length = GeohashHelper::lengthFromDistance($this->cluster_distance, $this->resolution);
     $entities_by_geohash = $this->load_entity_fields($entities_by_type, $values, $geohash_length);
 
+    $debug =
+      "zoom: " . $this->zoom_level .
+      " , resolution: " . $this->resolution .
+      " , distance: " . $this->cluster_distance .
+      " , geohash_length: " . $geohash_length;
+    print($debug);
+
     foreach ($entities_by_geohash as $current_hash => &$entities) {
       $cluster = NULL;
 

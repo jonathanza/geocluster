@@ -44,12 +44,15 @@ function geocluster_views_post_execute_query(&$view) {
       $zoom = $info['settings']['zoom'];
       break;
     case 'views_geojson':
-      $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
       break;
     case 'geofield_map':
       $style_options = $view->display_handler->display->display_options['style_options'];
       $zoom = $style_options['geofield_map_zoom'];
   }
+
+  // Allow to override using get paramters for debugging purposes.
+  $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
+  $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
 
   $cluster = new Geocluster($cluster_distance, $zoom, $field);
   $cluster->cluster($view);
