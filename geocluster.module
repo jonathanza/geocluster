@@ -33,15 +33,24 @@ function geocluster_views_post_execute_query(&$view) {
 
   $cluster_distance = $field->options['cluster_distance'];
 
-  if ($view->style_plugin->plugin_name == 'leaflet') {
-    $map = $view->style_plugin->options['map'];
-    $info =  leaflet_map_get_info($map);
-    $zoom = $info['settings']['zoom'];
-  }
-  else {
-    // geofield_map
-    $style_options = $view->display_handler->display->display_options['style_options'];
-    $zoom = $style_options['geofield_map_zoom'];
+  // @todo: Implement bbox logic and calculate zoom from bbox.
+
+  // Default zoom
+  $zoom = 7;
+  switch ($view->style_plugin->plugin_name) {
+    case 'leaflet':
+      $map = $view->style_plugin->options['map'];
+      $info =  leaflet_map_get_info($map);
+      $zoom = $info['settings']['zoom'];
+      break;
+    case 'views_geojson':
+      $map = $view->style_plugin->options['map'];
+      $info =  leaflet_map_get_info($map);
+      $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
+      break;
+    case 'geofield_map':
+      $style_options = $view->display_handler->display->display_options['style_options'];
+      $zoom = $style_options['geofield_map_zoom'];
   }
 
   $cluster = new Geocluster($cluster_distance, $zoom, $field);
