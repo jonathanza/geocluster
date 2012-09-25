@@ -44,8 +44,6 @@ function geocluster_views_post_execute_query(&$view) {
       $zoom = $info['settings']['zoom'];
       break;
     case 'views_geojson':
-      $map = $view->style_plugin->options['map'];
-      $info =  leaflet_map_get_info($map);
       $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
       break;
     case 'geofield_map':

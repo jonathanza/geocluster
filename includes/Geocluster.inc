@@ -46,25 +46,25 @@ class Geocluster {
 
     geophp_load();
 
-    $entities_by_type = $this->entities_by_type($view->result);
-    $entities_by_geohash = $this->load_entity_fields($entities_by_type, $view->result);
-
     $values = &$view->result;
 
     if(TRUE) {
       // Geohash-based sort algorithm.
-      $this->geohashSort($entities_by_geohash, $values);
+      $this->geohashCluster($values);
     }
     else {
       // Simple sort algorithm.
-      $this->simpleSort($values);
+      $this->simpleCluster($values);
     }
-
-
 
   }
 
-  function geohashSort($entities_by_geohash, &$values) {
+  function geohashCluster(&$values) {
+    $entities_by_type = $this->entities_by_type($values);
+
+    $geohash_length = GeohashHelper::lengthFromDistance($this->cluster_distance, $this->resolution);
+    $entities_by_geohash = $this->load_entity_fields($entities_by_type, $values, $geohash_length);
+
     foreach ($entities_by_geohash as $current_hash => &$entities) {
       $cluster = NULL;
 
@@ -102,7 +102,7 @@ class Geocluster {
     }
   }
 
-  function simpleSort(&$values) {
+  function simpleCluster(&$values) {
     // Perform clustering.
     for($i = 0; $i < count($values); $i++) {
       $value = &$values[$i];
@@ -200,7 +200,7 @@ class Geocluster {
     return $entities_by_type;
   }
 
-  function load_entity_fields($entities_by_type, &$values) {
+  function load_entity_fields($entities_by_type, &$values, $geohash_length) {
     // Load only the field data required for geoclustering.
     // This saves us unnecessary entity loads.
     foreach ($entities_by_type as $entity_type => $my_entities) {
@@ -220,7 +220,6 @@ class Geocluster {
 
       $keys = $my_entities;
       $entities_by_geohash = array();
-      $geohash_length = GeohashHelper::lengthFromDistance($this->cluster_distance, $this->resolution);
 
       foreach ($keys as $key => $entity_id) {
         // If this is a revision, load the revision instead.
