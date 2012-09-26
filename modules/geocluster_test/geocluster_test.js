@@ -17,43 +17,42 @@
       var hash = Geohash.get_key(center.lat, center.lng, length);
       var bounds_geohash = Geohash.bbox(hash);
 
+      Drupal.behaviors.geocluster_test.drawHashRect(hash, map, "#00ff00", 0.1);
+
       length += 1;
       var hash = Geohash.get_key(center.lat, center.lng, length);
-
-      // convert bounds
-      var bounds = [[bounds_geohash[3], bounds_geohash[0]], [bounds_geohash[1], bounds_geohash[2]]];
-
-      // create an orange rectangle
-      L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(map);
 
       // zoom the map to the rectangle bounds
       // map.fitBounds(bounds);
 
+      var hash = Geohash.get_key(center.lat, center.lng, length);
+
+      Drupal.behaviors.geocluster_test.hashChildren(hash, map, bounds_geohash, "#ff0000", 0.5);
+
+
       length += 1;
       var hash = Geohash.get_key(center.lat, center.lng, length);
 
-      Drupal.behaviors.geocluster_test.hashChildren(hash, map, bounds_geohash);
+      Drupal.behaviors.geocluster_test.hashChildren(hash, map, bounds_geohash, "#00ff00", 0.1);
     },
 
+    drawHashRect: function(hash, map, color, opacity) {
+      color = typeof color !== 'undefined' ? color : "#ff7800";
+      opacity = typeof opacity !== 'undefined' ? opacity : 0.5;
 
-    drawHashRect: function(hash, map) {
       var bounds_geohash = Geohash.bbox(hash);
       // convert bounds
       var bounds = [[bounds_geohash[3], bounds_geohash[0]], [bounds_geohash[1], bounds_geohash[2]]];
 
       // create an orange rectangle
-      L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(map);
+      L.rectangle(bounds, {color: color, weight: 1, opacity: opacity, fillOpacity: 0.0}).addTo(map);
     },
 
-    hashChildren: function(hash, map, bounds_geohash) {
+    hashChildren: function(hash, map, bounds_geohash, color, opacity) {
       var keys = new Object;
       Geohash.fill_bbox(hash, keys, bounds_geohash);
       $.each(keys, function(key) {
-        var bounds_geohash = Geohash.bbox(key);
-        // convert bounds
-        var bounds = [[bounds_geohash[3], bounds_geohash[0]], [bounds_geohash[1], bounds_geohash[2]]];
-
-        L.rectangle(bounds, {color: "#ff7800", weight: 1}).addTo(map);
+        Drupal.behaviors.geocluster_test.drawHashRect(key, map, color, opacity);
       });
     }
   };
