@@ -70,7 +70,7 @@ class Geocluster {
       " , resolution: " . $this->resolution .
       " , distance: " . $this->cluster_distance .
       " , geohash_length: " . $geohash_length;
-    print($debug);
+    // print($debug);
 
     foreach ($entities_by_geohash as $current_hash => &$entities) {
       $cluster = NULL;
@@ -149,10 +149,10 @@ class Geocluster {
     $cluster->node_title .= ' + ' . $result2->node_title;
 
     if (isset($result2->{$field_alias})) {
-      $cluster->ids += array($result2->{$field_alias});
+      $cluster->ids = array_merge($cluster->ids, array($result2->{$field_alias}));
     }
     else {
-      $cluster->ids += $result2->ids;
+      $cluster->ids += array_merge($cluster->ids, $result2->ids);
     }
     // Avoid cluster being treated as a normal item.
     if (isset($cluster->{$field_alias})) {
@@ -171,7 +171,6 @@ class Geocluster {
    * Determine if two geofields should be clustered as of their distance.
    */
   protected function shouldCluster($values, $value, $value2) {
-
     $field_alias = $this->field_handler->field_alias;
 
     // Load geofields.
