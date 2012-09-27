@@ -8,6 +8,7 @@ dependencies[] = geocluster
 dependencies[] = leaflet
 
 scripts[] = geohash.js
-scripts[] = geocluster_test.js
+
+stylesheets[all][] = geocluster_test.css
 
 

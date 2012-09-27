@@ -43,3 +43,11 @@ function geocluster_test_leaflet_map_info() {
     ),
   );
 }
+
+function geocluster_test_preprocess_leaflet_map($variables) {
+  drupal_add_js(
+    drupal_get_path('module', 'geocluster_test') . '/geocluster_test.js',
+    // Add our script after leaflet.drupal.js.
+    array('weight' => 5)
+  );
+}
