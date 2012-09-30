@@ -19,7 +19,7 @@ function geocluster_test_leaflet_map_info() {
       'settings' => array(
         'zoom' => 7,
         'minZoom' => 0,
-        'maxZoom' => 8,
+        'maxZoom' => 16,
         'dragging' => TRUE,
         'touchZoom' => TRUE,
         'scrollWheelZoom' => TRUE,
@@ -50,4 +50,18 @@ function geocluster_test_preprocess_leaflet_map($variables) {
     // Add our script after leaflet.drupal.js.
     array('weight' => 5)
   );
+}
+
+function geocluster_test_preprocess_page(&$variables) {
+  $item = menu_get_item();
+  if ($item['path'] == 'maptable') {
+    $markup = &$variables['page']['content']['system_main']['main']['#markup'];
+    $markup = "jo" . $markup;
+
+    // $map = leaflet_map_get_info('local json');
+
+    $map = leaflet_map_get_info('local control');
+    $render = leaflet_render_map($map);
+    $markup = $render . $markup;
+  }
 }

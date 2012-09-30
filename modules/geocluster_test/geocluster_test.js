@@ -2,8 +2,56 @@
 
   Drupal.behaviors.geocluster_test = {
 
+    url: "http://localhost/mapping/json-cluster",
+    map: null,
+    layerGroup: null,
+
+    _get: new (function(){
+      var parts = window.location.search.substr(1).split("&");
+      var $_GET = {};
+      for (var i = 0; i < parts.length; i++) {
+        var temp = parts[i].split("=");
+        $_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+      }
+      return $_GET;
+    }),
+
+    moveEnd: function(e) {
+      var map = Drupal.behaviors.geocluster_test.map;
+
+      var url = Drupal.behaviors.geocluster_test.url;
+      url += "?bbox=" + map.getBounds().toBBoxString();
+      url += "&zoom=" + map.getZoom();
+
+      if (Drupal.behaviors.geocluster_test._get['cluster_distance'] != undefined) {
+        url += "&cluster_distance=" + Drupal.behaviors.geocluster_test._get['cluster_distance'];
+      }
+
+      $.getJSON(url, function(data) {
+        var geojsonLayer = new L.GeoJSON(data);		//New GeoJSON layer
+        Drupal.behaviors.geocluster_test.layerGroup.clearLayers();
+        Drupal.behaviors.geocluster_test.layerGroup.addLayer(geojsonLayer);
+      });
+    },
+
+    loadGeoJSON: function(map) {
+      $.getJSON(Drupal.behaviors.geocluster_test.url, function (data) {
+        //When GeoJSON is loaded
+        var geojsonLayer = new L.GeoJSON(data);		//New GeoJSON layer
+        layerGroup = new L.LayerGroup();
+        layerGroup.addLayer(geojsonLayer);
+        layerGroup.addTo(map);
+        Drupal.behaviors.geocluster_test.layerGroup = layerGroup;
+      });
+      Drupal.behaviors.geocluster_test.map = map;
+      map.on('moveend', Drupal.behaviors.geocluster_test.moveEnd);
+    },
+
     onMapLoad: function(event) {
       var map = this;
+
+      Drupal.behaviors.geocluster_test.loadGeoJSON(map);
+
       var center = map.getCenter();
       var bounds = map.getBounds();
 
