@@ -67,7 +67,7 @@ function geocluster_test_leaflet_map_info() {
       ),
       'layers' => array(
         'control_room' => array(
-          'urlTemplate' => 'http://a.tiles.mapbox.com/v3/dasjo.map-htfgjimu/{z}/{x}/{y}.png',
+          'urlTemplate' => 'http://{s}.tiles.mapbox.com/v3/dasjo.map-htfgjimu/{z}/{x}/{y}.png',
            'otions' => array(
             'attribution' => 'MapBox'
            )
