@@ -2,16 +2,9 @@
 
   Drupal.behaviors.geocluster_test = {
 
-    url: "http://localhost/mapping/json-cluster",
-    map: null,
-    markerGroup: null,
-
     onMapLoad: function(event) {
       var map = this;
       Drupal.behaviors.geocluster_test.map = map;
-
-      Drupal.behaviors.geocluster_test.markerGroup = new L.LayerGroup();
-      Drupal.behaviors.geocluster_test.markerGroup.addTo(map);
 
       Drupal.behaviors.geocluster_test.hashGroup = new L.LayerGroup();
       Drupal.behaviors.geocluster_test.hashGroup.addTo(map);
@@ -22,36 +15,7 @@
 
     moveEnd: function(e) {
       var map = Drupal.behaviors.geocluster_test.map;
-      Drupal.behaviors.geocluster_test.makeGeoJSONLayer(map);
       Drupal.behaviors.geocluster_test.makeHashGrid(map);
-    },
-
-    makeGeoJSONLayer: function(map, url) {
-      url = typeof url !== 'undefined' ? url : Drupal.behaviors.geocluster_test.url;
-
-      url += "?bbox=" + map.getBounds().toBBoxString();
-      url += "&zoom=" + map.getZoom();
-
-      if (Drupal.behaviors.geocluster_test._get['cluster_distance'] != undefined) {
-        url += "&cluster_distance=" + Drupal.behaviors.geocluster_test._get['cluster_distance'];
-      }
-
-      $.getJSON(url, function(data) {
-        //New GeoJSON layer
-        var geojsonLayer = new L.GeoJSON(data, {
-          onEachFeature: function(featureData, layer) {
-            var popupText = featureData.properties.name;
-            layer.bindPopup(popupText);
-          },
-          pointToLayer: function(featureData, latlng) {
-            var icon = new L.NumberedDivIcon({number: featureData.cluster_items || 1});
-            lMarker = new L.Marker(latlng, {icon:icon});
-            return lMarker;
-          }
-        });
-        Drupal.behaviors.geocluster_test.markerGroup.clearLayers();
-        Drupal.behaviors.geocluster_test.markerGroup.addLayer(geojsonLayer);
-      });
     },
 
     makeHashGrid: function(map) {
@@ -108,25 +72,16 @@
       var rect = L.rectangle(bounds, {color: color, weight: 1, opacity: opacity, fillOpacity: 0.0});
 
       Drupal.behaviors.geocluster_test.hashGroup.addLayer(rect);
-    },
+    }
 
-    _get: new (function(){
-      var parts = window.location.search.substr(1).split("&");
-      var $_GET = {};
-      for (var i = 0; i < parts.length; i++) {
-        var temp = parts[i].split("=");
-        $_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
-      }
-      return $_GET;
-    })
   };
 
-  var _old_initialize = L.Map.prototype.initialize;
+  var _geocluster_test_old_leaflet_initialize = L.Map.prototype.initialize;
 
   L.Map.include({
 
     initialize: function(/*HTMLElement or String*/ id, /*Object*/ options) {
-      _old_initialize.apply(this, [id, options]);
+      _geocluster_test_old_leaflet_initialize.apply(this, [id, options]);
       this.on('load', Drupal.behaviors.geocluster_test.onMapLoad, this);
     }
 

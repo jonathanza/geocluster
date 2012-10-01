@@ -53,7 +53,6 @@ function geocluster_views_post_execute_query(&$view) {
   // Allow to override using get paramters for debugging purposes.
   $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
   $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
-
   $cluster = new Geocluster($cluster_distance, $zoom, $field);
   $cluster->cluster($view);
 }
@@ -73,7 +72,13 @@ function geocluster_leaflet_views_alter_points_data($result, &$points) {
   }
 }
 
-
+function geocluster_preprocess_leaflet_map($variables) {
+  drupal_add_js(
+    drupal_get_path('module', 'geocluster') . '/js/geocluster.js',
+    // Add our script after leaflet.drupal.js.
+    array('weight' => 5)
+  );
+}
 
 /**
  * Invokes clustering after the views query has been executed.
