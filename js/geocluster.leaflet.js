@@ -2,7 +2,6 @@
 
   Drupal.geocluster = {
 
-    url: "http://localhost/mapping/json-cluster",
     map: null,
     markerGroup: null,
 
@@ -23,7 +22,7 @@
     },
 
     makeGeoJSONLayer: function(map, url) {
-      url = typeof url !== 'undefined' ? url : Drupal.geocluster.url;
+      url = typeof url !== 'undefined' ? url : Drupal.settings.basePath + "/json-cluster";
 
       url += "?bbox=" + map.getBounds().toBBoxString();
       url += "&zoom=" + map.getZoom();
