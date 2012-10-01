@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the geocluster_demo feature.
+ */
+
+include_once 'geocluster_demo.features.inc';
