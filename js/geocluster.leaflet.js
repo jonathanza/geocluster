@@ -22,7 +22,7 @@
     },
 
     makeGeoJSONLayer: function(map, url) {
-      url = typeof url !== 'undefined' ? url : Drupal.settings.basePath + "/json-cluster";
+      url = typeof url !== 'undefined' ? url : Drupal.settings.basePath + "json-cluster";
 
       url += "?bbox=" + map.getBounds().toBBoxString();
       url += "&zoom=" + map.getZoom();
