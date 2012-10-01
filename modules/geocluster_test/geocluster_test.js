@@ -28,7 +28,17 @@
       }
 
       $.getJSON(url, function(data) {
-        var geojsonLayer = new L.GeoJSON(data);		//New GeoJSON layer
+        var geojsonLayer = new L.GeoJSON(data, {
+          onEachFeature: function(featureData, layer) {
+            var popupText = featureData.properties.name;
+            layer.bindPopup(popupText);
+          },
+          pointToLayer: function(featureData, latlng) {
+            var icon = new L.NumberedDivIcon({number: featureData.cluster_items || 1});
+            lMarker = new L.Marker(latlng, {icon:icon});
+            return lMarker;
+          }
+        });		//New GeoJSON layer
         Drupal.behaviors.geocluster_test.layerGroup.clearLayers();
         Drupal.behaviors.geocluster_test.layerGroup.addLayer(geojsonLayer);
       });
