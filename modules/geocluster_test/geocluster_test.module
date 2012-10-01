@@ -89,7 +89,6 @@ function geocluster_test_preprocess_page(&$variables) {
   $item = menu_get_item();
   if ($item['path'] == 'maptable') {
     $markup = &$variables['page']['content']['system_main']['main']['#markup'];
-    $markup = "jo" . $markup;
 
     // $map = leaflet_map_get_info('local control');
     $map = leaflet_map_get_info('mapbox streets');
