@@ -5,7 +5,7 @@
 
   L.NumberedDivIcon = L.Icon.extend({
     options: {
-      iconUrl: Drupal.settings.basePath + 'sites/all/modules/geocluster/modules/geocluster_test/images/marker_hole.png',
+      iconUrl: Drupal.settings.basePath + 'sites/all/modules/geocluster/images/marker_hole.png',
       number: '',
       shadowUrl: null,
       iconSize: new L.Point(25, 41),
@@ -19,7 +19,7 @@
     },
 
     createIcon: function () {
-      this.options['iconUrl'] = Drupal.settings.basePath + 'sites/all/modules/geocluster/modules/geocluster_test/images/marker_hole.png';
+      this.options['iconUrl'] = Drupal.settings.basePath + 'sites/all/modules/geocluster/images/marker_hole.png';
 
       var div = document.createElement('div');
       var img = this._createImg(this.options['iconUrl']);
