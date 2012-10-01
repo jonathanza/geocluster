@@ -74,7 +74,13 @@ function geocluster_leaflet_views_alter_points_data($result, &$points) {
 
 function geocluster_preprocess_leaflet_map($variables) {
   drupal_add_js(
-    drupal_get_path('module', 'geocluster') . '/js/geocluster.js',
+    drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.marker.js',
+    // Add our script after leaflet.drupal.js.
+    array('weight' => 5)
+  );
+
+  drupal_add_js(
+    drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.js',
     // Add our script after leaflet.drupal.js.
     array('weight' => 5)
   );
