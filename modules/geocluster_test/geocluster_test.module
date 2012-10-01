@@ -41,6 +41,39 @@ function geocluster_test_leaflet_map_info() {
         ),
       ),
     ),
+
+    'mapbox streets' =>
+    array(
+      'label' => 'mapbox streets',
+      'description' => t(''),
+      'center' => array(
+        'lon' => 14.32411,
+        'lat' => 47.88101
+      ),
+      'settings' => array(
+        'zoom' => 7,
+        'minZoom' => 0,
+        'maxZoom' => 16,
+        'dragging' => TRUE,
+        'touchZoom' => TRUE,
+        'scrollWheelZoom' => TRUE,
+        'doubleClickZoom' => TRUE,
+        'zoomControl' => TRUE,
+        'attributionControl' => TRUE,
+        'trackResize' => TRUE,
+        'fadeAnimation' => TRUE,
+        'zoomAnimation' => TRUE,
+        'closePopupOnClick' => TRUE,
+      ),
+      'layers' => array(
+        'control_room' => array(
+          'urlTemplate' => 'http://a.tiles.mapbox.com/v3/dasjo.map-htfgjimu/{z}/{x}/{y}.png',
+           'otions' => array(
+            'attribution' => 'MapBox'
+           )
+        ),
+      ),
+    ),
   );
 }
 
@@ -58,9 +91,8 @@ function geocluster_test_preprocess_page(&$variables) {
     $markup = &$variables['page']['content']['system_main']['main']['#markup'];
     $markup = "jo" . $markup;
 
-    // $map = leaflet_map_get_info('local json');
-
-    $map = leaflet_map_get_info('local control');
+    // $map = leaflet_map_get_info('local control');
+    $map = leaflet_map_get_info('mapbox streets');
     $render = leaflet_render_map($map);
     $markup = $render . $markup;
   }
