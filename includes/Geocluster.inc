@@ -71,6 +71,7 @@ class Geocluster {
       " , distance: " . $this->cluster_distance .
       " , geohash_length: " . $geohash_length;
     // print($debug);
+    dd($debug);
 
     foreach ($entities_by_geohash as $current_hash => &$entities) {
       $cluster = NULL;
