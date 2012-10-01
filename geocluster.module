@@ -72,6 +72,13 @@ function geocluster_leaflet_views_alter_points_data($result, &$points) {
   }
 }
 
+function geocluster_views_geojson_render_fields_alter(&$feature, $view, $row, $index) {
+  if ($row->clustered) {
+    $feature['clustered'] = TRUE;
+    $feature['cluster_items'] = count($row->ids);
+  }
+}
+
 function geocluster_preprocess_leaflet_map($variables) {
   drupal_add_js(
     drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.marker.js',
