@@ -4,22 +4,31 @@
 
     url: "http://localhost/mapping/json-cluster",
     map: null,
-    layerGroup: null,
+    markerGroup: null,
 
-    _get: new (function(){
-      var parts = window.location.search.substr(1).split("&");
-      var $_GET = {};
-      for (var i = 0; i < parts.length; i++) {
-        var temp = parts[i].split("=");
-        $_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
-      }
-      return $_GET;
-    }),
+    onMapLoad: function(event) {
+      var map = this;
+      Drupal.behaviors.geocluster_test.map = map;
+
+      Drupal.behaviors.geocluster_test.markerGroup = new L.LayerGroup();
+      Drupal.behaviors.geocluster_test.markerGroup.addTo(map);
+
+      Drupal.behaviors.geocluster_test.hashGroup = new L.LayerGroup();
+      Drupal.behaviors.geocluster_test.hashGroup.addTo(map);
+
+      map.on('moveend', Drupal.behaviors.geocluster_test.moveEnd);
+      Drupal.behaviors.geocluster_test.moveEnd();
+    },
 
     moveEnd: function(e) {
       var map = Drupal.behaviors.geocluster_test.map;
+      Drupal.behaviors.geocluster_test.makeGeoJSONLayer(map);
+      Drupal.behaviors.geocluster_test.makeHashGrid(map);
+    },
 
-      var url = Drupal.behaviors.geocluster_test.url;
+    makeGeoJSONLayer: function(map, url) {
+      url = typeof url !== 'undefined' ? url : Drupal.behaviors.geocluster_test.url;
+
       url += "?bbox=" + map.getBounds().toBBoxString();
       url += "&zoom=" + map.getZoom();
 
@@ -28,6 +37,7 @@
       }
 
       $.getJSON(url, function(data) {
+        //New GeoJSON layer
         var geojsonLayer = new L.GeoJSON(data, {
           onEachFeature: function(featureData, layer) {
             var popupText = featureData.properties.name;
@@ -38,29 +48,14 @@
             lMarker = new L.Marker(latlng, {icon:icon});
             return lMarker;
           }
-        });		//New GeoJSON layer
-        Drupal.behaviors.geocluster_test.layerGroup.clearLayers();
-        Drupal.behaviors.geocluster_test.layerGroup.addLayer(geojsonLayer);
+        });
+        Drupal.behaviors.geocluster_test.markerGroup.clearLayers();
+        Drupal.behaviors.geocluster_test.markerGroup.addLayer(geojsonLayer);
       });
     },
 
-    loadGeoJSON: function(map) {
-      $.getJSON(Drupal.behaviors.geocluster_test.url, function (data) {
-        //When GeoJSON is loaded
-        var geojsonLayer = new L.GeoJSON(data);		//New GeoJSON layer
-        layerGroup = new L.LayerGroup();
-        layerGroup.addLayer(geojsonLayer);
-        layerGroup.addTo(map);
-        Drupal.behaviors.geocluster_test.layerGroup = layerGroup;
-      });
-      Drupal.behaviors.geocluster_test.map = map;
-      map.on('moveend', Drupal.behaviors.geocluster_test.moveEnd);
-    },
-
-    onMapLoad: function(event) {
-      var map = this;
-
-      Drupal.behaviors.geocluster_test.loadGeoJSON(map);
+    makeHashGrid: function(map) {
+      Drupal.behaviors.geocluster_test.hashGroup.clearLayers();
 
       var center = map.getCenter();
       var bounds = map.getBounds();
@@ -87,11 +82,18 @@
 
       Drupal.behaviors.geocluster_test.hashChildren(hash, map, bounds_geohash, "#ff0000", 0.5);
 
-
       length += 1;
       var hash = Geohash.get_key(center.lat, center.lng, length);
 
       Drupal.behaviors.geocluster_test.hashChildren(hash, map, bounds_geohash, "#00ff00", 0.1);
+    },
+
+    hashChildren: function(hash, map, bounds_geohash, color, opacity) {
+      var keys = new Object;
+      Geohash.fill_bbox(hash, keys, bounds_geohash);
+      $.each(keys, function(key) {
+        Drupal.behaviors.geocluster_test.drawHashRect(key, map, color, opacity);
+      });
     },
 
     drawHashRect: function(hash, map, color, opacity) {
@@ -103,16 +105,20 @@
       var bounds = [[bounds_geohash[3], bounds_geohash[0]], [bounds_geohash[1], bounds_geohash[2]]];
 
       // create an orange rectangle
-      L.rectangle(bounds, {color: color, weight: 1, opacity: opacity, fillOpacity: 0.0}).addTo(map);
+      var rect = L.rectangle(bounds, {color: color, weight: 1, opacity: opacity, fillOpacity: 0.0});
+
+      Drupal.behaviors.geocluster_test.hashGroup.addLayer(rect);
     },
 
-    hashChildren: function(hash, map, bounds_geohash, color, opacity) {
-      var keys = new Object;
-      Geohash.fill_bbox(hash, keys, bounds_geohash);
-      $.each(keys, function(key) {
-        Drupal.behaviors.geocluster_test.drawHashRect(key, map, color, opacity);
-      });
-    }
+    _get: new (function(){
+      var parts = window.location.search.substr(1).split("&");
+      var $_GET = {};
+      for (var i = 0; i < parts.length; i++) {
+        var temp = parts[i].split("=");
+        $_GET[decodeURIComponent(temp[0])] = decodeURIComponent(temp[1]);
+      }
+      return $_GET;
+    })
   };
 
   var _old_initialize = L.Map.prototype.initialize;
