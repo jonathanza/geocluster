@@ -24,7 +24,7 @@
     makeGeoJSONLayer: function(map, url) {
       url = typeof url !== 'undefined' ? url : Drupal.settings.basePath + "json-cluster";
 
-      url += "?bbox=" + map.getBounds().toBBoxString();
+      url += "?bbox=" + map.getBounds().pad(0.05).toBBoxString();
       url += "&zoom=" + map.getZoom();
 
       if (Drupal.geocluster._get['cluster_distance'] != undefined) {

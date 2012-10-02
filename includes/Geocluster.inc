@@ -76,6 +76,8 @@ class Geocluster {
     foreach ($entities_by_geohash as $current_hash => &$entities) {
       $cluster = NULL;
 
+      dd($current_hash);
+
       // Add all points within the core geohash to a cluster.
       foreach ($entities_by_geohash[$current_hash] as $key => &$entity) {
 
