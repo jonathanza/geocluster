@@ -94,6 +94,68 @@ function geocluster_preprocess_leaflet_map($variables) {
 }
 
 /**
+ * Implements hook_search_api_data_type_info().
+ */
+function geocluster_search_api_data_type_info() {
+  return array(
+    'geohash' => array(
+      'name' => t('geohash'),
+      'fallback' => 'string',
+    ),
+  );
+}
+
+/**
+ * Add geohash property for all geofields.
+ *
+ * Implements hook_entity_property_info_alter().
+ */
+function geocluster_entity_property_info_alter(&$info) {
+  foreach ($info as &$entity_type) {
+    geocluster_geofield_add_geohash_property($entity_type);
+    if (isset($entity_type['bundles'])) {
+      foreach ($entity_type['bundles'] as &$bundle) {
+        geocluster_geofield_add_geohash_property($bundle);
+      }
+    }
+  }
+}
+
+/**
+ * Helper function that adds geohash property for a geofield.
+ */
+function geocluster_geofield_add_geohash_property(&$value) {
+  if (isset($value['properties'])) {
+    foreach ($value['properties'] as &$property) {
+      if (isset($property['type']) && $property['type'] == 'geofield') {
+        $property['property info']['geohash'] = array(
+          'label' => t('Geohash'),
+          'type' => 'boolean',
+          'description' => t('Returns the location as geohash'),
+          'getter callback' => 'geocluster_geofield_geohash_property_get_callback',
+          'computed' => TRUE,
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Getter callback for a geofield geohash property.
+ */
+function geocluster_geofield_geohash_property_get_callback($entity, array $options, $name, $type, $info) {
+  geophp_load();
+  $geometry = geoPHP::load($entity['geom']);
+  return $geometry->out('geohash');
+}
+
+
+
+
+
+
+
+/**
  * Invokes clustering after the views query has been executed.
  *
  * Implements hook_views_post_execute_query.
