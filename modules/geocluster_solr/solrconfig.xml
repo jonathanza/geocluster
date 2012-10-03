@@ -841,6 +841,29 @@
     </arr>
   </requestHandler>-->
 
+
+  <searchComponent
+    name="geoclusterComponent"
+    enable="${solr.geocluster.enabled:true}"
+    class="geocluster.GeoclusterComponent" >
+
+    <lst name="engine">
+      <str name="name">default</str>
+      <str name="geocluster.clusterDistance">30</str>
+    </lst>
+  </searchComponent>
+
+  <requestHandler name="/geocluster"
+                  enable="${solr.geocluster.enabled:true}"
+                  class="solr.SearchHandler">
+     <lst name="defaults">
+       <bool name="geocluster">true</bool>
+    </lst>
+    <arr name="last-components">
+      <str>geoclusterComponent</str>
+    </arr>
+  </requestHandler>
+
   <!-- Solr Cell: http://wiki.apache.org/solr/ExtractingRequestHandler -->
 <!--<requestHandler name="/update/extract" class="org.apache.solr.handler.extraction.ExtractingRequestHandler" startup="lazy">
     <lst name="defaults">
