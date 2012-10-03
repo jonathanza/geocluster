@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * Implements hook_search_api_data_type_info().
+ */
+function geocluster_solr_search_api_data_type_info() {
+  return array(
+    'geohash' => array(
+      'name' => t('geohash'),
+      'fallback' => 'string',
+    ),
+  );
+}

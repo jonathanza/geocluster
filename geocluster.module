@@ -94,18 +94,6 @@ function geocluster_preprocess_leaflet_map($variables) {
 }
 
 /**
- * Implements hook_search_api_data_type_info().
- */
-function geocluster_search_api_data_type_info() {
-  return array(
-    'geohash' => array(
-      'name' => t('geohash'),
-      'fallback' => 'string',
-    ),
-  );
-}
-
-/**
  * Add geohash property for all geofields.
  *
  * Implements hook_entity_property_info_alter().

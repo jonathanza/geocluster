@@ -1,0 +1,8 @@
+name = Geocluster Solr
+description =
+
+package = Mapping
+core = "7.x"
+
+dependencies[] = geocluster
+; dependencies[] = search_api_solr
