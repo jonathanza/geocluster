@@ -118,9 +118,17 @@ function geocluster_geofield_add_geohash_property(&$value) {
       if (isset($property['type']) && $property['type'] == 'geofield') {
         $property['property info']['geohash'] = array(
           'label' => t('Geohash'),
-          'type' => 'boolean',
+          'type' => 'string',
           'description' => t('Returns the location as geohash'),
           'getter callback' => 'geocluster_geofield_geohash_property_get_callback',
+          'computed' => TRUE,
+        );
+
+        $property['property info']['geohash_geocluster_index'] = array(
+          'label' => t('Geohash geocluster index'),
+          'type' => 'list<string>',
+          'description' => t('Returns the location as geohash'),
+          'getter callback' => 'geocluster_geofield_geohash_geocluster_index_property_get_callback',
           'computed' => TRUE,
         );
       }
@@ -137,11 +145,25 @@ function geocluster_geofield_geohash_property_get_callback($entity, array $optio
   return $geometry->out('geohash');
 }
 
-
-
-
-
-
+/**
+ * Returns an array of geohash prefixes numbered by length.
+ *
+ * see http://stackoverflow.com/questions/11319465/geoclusters-in-solr/11321723#11321723
+ *
+ * example:
+ *   1_u
+ *   2_u2
+ *   3_u2s
+ *   ...
+ */
+function geocluster_geofield_geohash_geocluster_index_property_get_callback($entity, array $options, $name, $type, $info) {
+  $geohash = geocluster_geofield_geohash_property_get_callback($entity, $options, $name, $type, $info);
+  $geohash_index = array();
+  for ($i = strlen($geohash); $i > 0; $i--) {
+    $geohash_index[] = $i . '_' . substr($geohash, 0, $i);
+  }
+  return $geohash_index;
+}
 
 /**
  * Invokes clustering after the views query has been executed.
