@@ -6,6 +6,11 @@
  */
 
 /**
+ * Diameter of the Earth in kilometers.
+ */
+define('GEOCLUSTER_GEOHASH_LENGTH', 12);
+
+/**
  * Implements hook_views_api().
  */
 function geocluster_views_api() {
@@ -124,6 +129,10 @@ function geocluster_geofield_add_geohash_property(&$value) {
           'computed' => TRUE,
         );
 
+        // We don't use the index array,
+        // as group.facet for multivalued is only SOLR 4.0
+        // see http://wiki.apache.org/solr/FieldCollapsing
+        /*
         $property['property info']['geohash_geocluster_index'] = array(
           'label' => t('Geohash geocluster index'),
           'type' => 'list<string>',
@@ -131,6 +140,18 @@ function geocluster_geofield_add_geohash_property(&$value) {
           'getter callback' => 'geocluster_geofield_geohash_geocluster_index_property_get_callback',
           'computed' => TRUE,
         );
+        */
+
+        for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
+          $property['property info']['geohash_geocluster_index_' . $i] = array(
+            'label' => t('Geohash geocluster index ' . $i),
+            'type' => 'string',
+            'description' => t('Returns the location as geohash with length ' . $i),
+            'getter callback' => 'geocluster_geofield_geohash_geocluster_index_property_get_callback',
+            'geohash length' => $i,
+            'computed' => TRUE,
+          );
+        }
       }
     }
   }
@@ -158,6 +179,13 @@ function geocluster_geofield_geohash_property_get_callback($entity, array $optio
  */
 function geocluster_geofield_geohash_geocluster_index_property_get_callback($entity, array $options, $name, $type, $info) {
   $geohash = geocluster_geofield_geohash_property_get_callback($entity, $options, $name, $type, $info);
+  // Output an specifc geohash prefix by the specified length.
+  if (isset($info['geohash length'])) {
+    $length = min($info['geohash length'], strlen($geohash));
+    return substr($geohash, 0, $length);
+  }
+  // No length specified.
+  // Output an array of all geohash prefixed numbered by their length.
   $geohash_index = array();
   for ($i = strlen($geohash); $i > 0; $i--) {
     $geohash_index[] = $i . '_' . substr($geohash, 0, $i);
