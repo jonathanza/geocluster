@@ -5,7 +5,14 @@ define('GEOHASH_PRECISION', 12);
 class GeohashHelper {
 
   static function getNeighbors($geohash) {
-    return GeoHashUtils::getNeighbors($geohash);
+    // Return only top-right neighbors according to the structure of geohash.
+    $neighbors = array();
+    $neighbors[0] = GeoHashUtils::calcNeighbors($geohash, 'top');
+    $neighbors[1] = GeoHashUtils::calcNeighbors($neighbors[0], 'right');
+    $neighbors[2] = GeoHashUtils::calcNeighbors($geohash, 'right');
+    //return array();
+    return $neighbors;
+    // return GeoHashUtils::getNeighbors($geohash);
   }
 
   /**

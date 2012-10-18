@@ -192,23 +192,3 @@ function geocluster_geofield_geohash_geocluster_index_property_get_callback($ent
   }
   return $geohash_index;
 }
-
-/**
- * Invokes clustering after the views query has been executed.
- *
- * Implements hook_views_post_execute_query.
- */
-/*
-function geocluster_views_object_types_alter(&$object_types) {
-  $object_types = array(
-    'cluster' => array(
-      'title' => t('Cluster behavior'),
-      'ltitle' => t('cluster behavior'),
-      'stitle' => t('Cluster behavior'),
-      'lstitle' => t('Cluster behavior'),
-      'plural' => 'cluster',
-    ),
-  ) + $object_types;
-  return $object_types;
-}
-*/

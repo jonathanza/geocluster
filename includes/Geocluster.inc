@@ -60,11 +60,14 @@ class Geocluster {
   }
 
   function geohashCluster(&$values) {
+    // Prepare input data & parameters.
     $entities_by_type = $this->entities_by_type($values);
 
+    // Generate geohash-based pre-clusters.
     $geohash_length = GeohashHelper::lengthFromDistance($this->cluster_distance, $this->resolution);
     $entities_by_geohash = $this->load_entity_fields($entities_by_type, $values, $geohash_length);
 
+    // @todo: Remove debug code.
     $debug =
       "zoom: " . $this->zoom_level .
       " , resolution: " . $this->resolution .
@@ -73,12 +76,11 @@ class Geocluster {
     // print($debug);
     dd($debug);
 
+    // Loop over geohash-based pre-clusters to create real clusters.
     foreach ($entities_by_geohash as $current_hash => &$entities) {
       $cluster = NULL;
 
-      dd($current_hash);
-
-      // Add all points within the core geohash to a cluster.
+      // Add all points within the current geohash to a cluster.
       foreach ($entities_by_geohash[$current_hash] as $key => &$entity) {
 
         if (!isset($cluster)) {
