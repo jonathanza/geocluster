@@ -1,0 +1,53 @@
+api = 2
+core = 7.x
+
+; Use drupal.org drupal via Git.
+projects[drupal][type] = core
+projects[drupal][version] = 7.16
+
+; Modules
+
+projects[libraries] = 1
+
+; projects[geocluster][version] = "1"
+projects[geocluster][download][type] = git
+projects[geocluster][download][branch] = 7.x-1.x
+projects[geocluster][download][revision] = 66ecd97976824dfbfe6bfc7a3fe7ef773cc3bc67
+
+projects[geofield][version] = "2"
+
+projects[leaflet][version] = "1"
+; Add hook_leaflet_views_alter_points_data http://drupal.org/node/1796422
+projects[leaflet][patch][] = "http://drupal.org/files/leaflet_views_alter_points_data.patch"
+
+libraries[leaflet][download][type] = "get"
+libraries[leaflet][download][url] = "https://github.com/CloudMade/Leaflet/zipball/v0.4.4"
+libraries[leaflet][directory_name] = "leaflet"
+libraries[leaflet][destination] = "libraries"
+
+projects[views][version] = "3"
+; Allow to inject a custom aggregation implementation http://drupal.org/node/1791796
+projects[views][patch][] = "http://drupal.org/files/views_post_execute_query_hook.patch"
+
+projects[views_geojson][version] = "1.x-dev"
+; Add hook views_geojson_render_fields_alter http://drupal.org/node/1799870
+projects[views_geojson][patch][] = "http://drupal.org/files/views_geojson_render_fields_alter.patch"
+; Recent geofield changes require changes http://drupal.org/node/1794848
+projects[views_geojson][patch][] = "http://drupal.org/files/views_geojson_geofield_changes.patch"
+
+
+projects[geophp][version] = "1.x-dev"
+
+; Not implemented in demo, yet
+;projects[search_api][version] = "1"
+;projects[search_api_solr][version] = "1"
+;projects[openlayers][version] = "1"
+
+projects[devel][version] = "1"
+projects[feeds][version] = "2"
+projects[job_scheduler][version] = "2"
+
+projects[ctools][version] = "1"
+projects[features][version] = "1"
+projects[diff][version] = "2"
+
