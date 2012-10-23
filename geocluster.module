@@ -25,17 +25,12 @@ function geocluster_views_api() {
  * Implements hook_views_post_execute_query.
  */
 function geocluster_views_post_execute_query(&$view) {
-
-  foreach ($view->field as $key => $my_field) {
-    if ($my_field->definition['handler'] == 'geocluster_handler_field_geofield') {
-      $field = $my_field;
-    }
-  }
-  if (!isset($field)) {
+  $enabled = $view->display_handler->get_option('geocluster_enabled');
+  if (empty($enabled)) {
     return;
   }
-
-  $cluster_distance = $field->options['cluster_distance'];
+  $geocluster_options = $view->display_handler->get_option('geocluster_options');
+  $cluster_distance = $geocluster_options['cluster_distance'];
 
   // @todo: Implement bbox logic and calculate zoom from bbox.
 
