@@ -15,3 +15,5 @@ files[] = includes/GeohashHelper.inc
 files[] = includes/GeohashUtils.inc
 
 files[] = views/handlers/geocluster_handler_field_geofield.inc
+
+files[] = views/GeoclusterViewsDisplayExtender.inc

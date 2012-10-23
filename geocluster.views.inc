@@ -6,13 +6,18 @@
  */
 
 /**
- * Implements hook_views_api().
+ * Implements hook_views_plugins().
+ *
  */
-function geocluster_views_api() {
-  return array(
-    'api' => '3',
-    'path' => drupal_get_path('module', 'geocluster') . '/views',
+function geocluster_views_plugins() {
+  $plugins = array();
+  $plugins['display_extender']['geocluster'] = array(
+    'title' => t('Geocluster'),
+    'help' => t('Configure geocluster settings.'),
+    'handler' => 'GeoclusterViewsDisplayExtender',
+    // 'uses options' => TRUE,
   );
+  return $plugins;
 }
 
 /**

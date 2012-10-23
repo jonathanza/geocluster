@@ -10,6 +10,15 @@
  */
 define('GEOCLUSTER_GEOHASH_LENGTH', 12);
 
+/**
+ * Implements hook_views_api().
+ */
+function geocluster_views_api() {
+  return array(
+    'api' => '3',
+  );
+}
+
 function geocluster_add_geojson_cluster_info(&$feature, $cluster_items) {
   $feature['clustered'] = TRUE;
   $feature['cluster_items'] = $cluster_items;
