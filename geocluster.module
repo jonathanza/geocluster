@@ -77,10 +77,14 @@ function geocluster_leaflet_views_alter_points_data($result, &$points) {
   }
 }
 
+function geocluster_add_geojson_cluster_info(&$feature, $cluster_items) {
+  $feature['clustered'] = TRUE;
+  $feature['cluster_items'] = $cluster_items;
+}
+
 function geocluster_views_geojson_render_fields_alter(&$feature, $view, $row, $index) {
   if ($row->clustered) {
-    $feature['clustered'] = TRUE;
-    $feature['cluster_items'] = count($row->ids);
+    geocluster_add_geojson_cluster_info($feature, count($row->ids));
   }
 }
 

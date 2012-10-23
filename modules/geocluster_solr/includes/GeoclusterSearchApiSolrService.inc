@@ -44,9 +44,6 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
 
       $total_count += $group->doclist->numFound;
       $result = array(
-        'cluster' => TRUE,
-        'cluster_count' => $group->doclist->numFound,
-        'cluster_items' => $group->doclist->docs,
         'id' => $group->groupValue,
         'score' => NULL,
       );
@@ -54,9 +51,15 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       // mock entity properties for SearchApiViewsQuery::addResults()
       // $row['_entity_properties'] += $result['fields'];
       $latlon_field = "t_field_place:latlon";
-      $latlon = explode(",", $result['cluster_items'][0]->{$latlon_field}[0]);
+      $latlon = explode(",", $group->doclist->docs[0]->{$latlon_field}[0]);
       $result['fields'] = array(
-        'nid' => $result['cluster_items'][0]->item_id,
+        // Cluster info.
+        'cluster' => TRUE,
+        'cluster_count' => $group->doclist->numFound,
+        'cluster_items' => $group->doclist->docs,
+
+        // Fields.
+        'nid' => $group->doclist->docs[0]->item_id,
         'field_place:lat' => $latlon[0],
         'field_place:lon' => $latlon[1],
       );
