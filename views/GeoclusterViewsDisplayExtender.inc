@@ -18,7 +18,7 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
 
-    // Add a checkbox to enable pretty paths per searcher.
+    // Add a checkbox to enable clustering.
     $more_form['geocluster_enabled'] = array(
       '#type' => 'checkbox',
       '#title' => 'Enable geocluster for this search.',
