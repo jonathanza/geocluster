@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * Diameter of the Earth in kilometers.
+ */
+define('GEOCLUSTER_DEFAULT_DISTANCE', 12);
 
 class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
 
@@ -10,7 +14,8 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     $options['geocluster_enabled']['default'] = FALSE;
     $options['geocluster_options'] = array(
       'contains' => array(
-        'cluster_distance' => array('default' => 12),
+        'cluster_field' => array('default' => ''),
+        'cluster_distance' => array('default' => GEOCLUSTER_DEFAULT_DISTANCE),
       ),
     );
   }
@@ -62,6 +67,14 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     $form = $more_form + $form;
   }
 
+  function options_validate(&$form, &$form_state) {
+  }
+
+  function options_submit(&$form, &$form_state) {
+    $this->display->set_option('geocluster_enabled', $form_state['values']['geocluster_enabled']);
+    $this->display->set_option('geocluster_options', $form_state['values']['geocluster_options']);
+  }
+
   function get_cluster_field_options() {
     // Inspired by geofield.
     $handlers = $this->display->get_handlers('field');
@@ -75,13 +88,4 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     }
     return $cluster_field_options;
   }
-
-  function options_validate(&$form, &$form_state) {
-  }
-
-  function options_submit(&$form, &$form_state) {
-    $this->display->set_option('geocluster_enabled', $form_state['values']['geocluster_enabled']);
-    $this->display->set_option('geocluster_options', $form_state['values']['geocluster_options']);
-  }
-
 }
