@@ -23,7 +23,7 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
   function options_form(&$form, &$form_state) {
     $cluster_field_options = $this->get_cluster_field_options();
     if (count($cluster_field_options) == 1) {
-      $form['error'] = array(
+      $more_form['error'] = array(
         '#markup' => 'Please add at least 1 geofield to the view',
       );
     }

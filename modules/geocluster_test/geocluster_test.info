@@ -9,6 +9,4 @@ dependencies[] = leaflet
 
 scripts[] = geohash.js
 
-stylesheets[all][] = geocluster_test.css
-
 

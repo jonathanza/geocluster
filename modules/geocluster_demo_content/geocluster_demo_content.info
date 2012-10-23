@@ -1,0 +1,4 @@
+name = geocluster_demo_content_content
+core = 7.x
+php = 5.2.4
+dependencies[] = geocluster_demo_content

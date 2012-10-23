@@ -31,6 +31,11 @@ function geocluster_views_post_execute_query(&$view) {
   }
   $geocluster_options = $view->display_handler->get_option('geocluster_options');
   $cluster_distance = $geocluster_options['cluster_distance'];
+  $field_name = $geocluster_options['cluster_field'];
+  if (empty($view->field[$field_name])) {
+    return;
+  }
+  $cluster_field = $view->field[$field_name];
 
   // @todo: Implement bbox logic and calculate zoom from bbox.
 
@@ -52,7 +57,7 @@ function geocluster_views_post_execute_query(&$view) {
   // Allow to override using get paramters for debugging purposes.
   $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
   $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
-  $cluster = new Geocluster($cluster_distance, $zoom, $field);
+  $cluster = new Geocluster($cluster_distance, $zoom, $cluster_field);
   $cluster->cluster($view);
 }
 

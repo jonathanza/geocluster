@@ -1,0 +1,52 @@
+<?php
+/**
+ * @file
+ * Code for the geocluster_demo_content feature.
+ */
+
+/**
+ * Implementation of hook_enable().
+ * @todo: move this to a features_rebuild() callback.
+ *
+ * Feeds import adapted from https://github.com/developmentseed/mn_world
+ */
+function geocluster_demo_content_enable() {
+  $file = 'geocluster_demo_geonames.csv';
+  $path = drupal_realpath('public://geocluster');
+  if (file_prepare_directory($path, TRUE)) {
+    $filepath = "{$path}/{$file}";
+
+    // Copy messstellen csv to file directory, avoid using shell_exec() for
+    // compatibility reasons.
+    if (!file_exists($filepath)) {
+      $src = file_get_contents(drupal_get_path('module', 'geocluster_demo_content') . "/feeds_import/{$file}");
+      file_put_contents($filepath, $src);
+    }
+
+    // Import file, clear caches to verify to make sure 'locations' importer
+    // is available when installing with Aegir.
+    ctools_include('export');
+    ctools_export_load_object_reset('feeds_importer');
+    $source = feeds_source('geonames_csv');
+    $source->addConfig(
+      array(
+        'FeedsFileFetcher' => array(
+          'source' => $filepath
+        ),
+      )
+    );
+    while (FEEDS_BATCH_COMPLETE != $source->import());
+  }
+}
+
+/**
+ * Implementation of hook_disable().
+ *
+ * @todo: move this to a features_rebuild() callback.
+ */
+function geocluster_demo_content_disable() {
+  // Dump all items from locations importer.
+  $source = feeds_source('hw_messstellen_cvs_importer');
+  $source->clear();
+}
+

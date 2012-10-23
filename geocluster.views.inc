@@ -25,6 +25,7 @@ function geocluster_views_plugins() {
  *
  * Implements hook_views_data_alter().
  */
+/*
 function geocluster_views_data_alter(&$data) {
   // @todo: use views_data hook?
   // @todo: load geofield names dynamically.
@@ -56,6 +57,7 @@ function geocluster_views_data_alter(&$data) {
     }
   }
 }
+*/
 
 /**
  * Implements hook_views_plugins().
