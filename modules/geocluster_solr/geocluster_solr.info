@@ -8,3 +8,5 @@ dependencies[] = geocluster
 dependencies[] = search_api_solr
 
 files[] = includes/GeoclusterSearchApiSolrService.inc
+
+files[] = views/GeoclusterSolrViewsDisplayExtender.inc

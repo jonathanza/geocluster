@@ -1,6 +1,15 @@
 <?php
 
 /**
+ * Implements hook_views_api().
+ */
+function geocluster_solr_views_api() {
+  return array(
+    'api' => 3.0,
+  );
+}
+
+/**
  * Implements hook_search_api_data_type_info().
  */
 function geocluster_solr_search_api_data_type_info() {
