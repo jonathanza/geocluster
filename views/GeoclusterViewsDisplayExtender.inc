@@ -9,27 +9,27 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     // and http://drupal.org/node/1616540
     $options['geocluster_enabled']['default'] = FALSE;
     $options['geocluster_options'] = array(
-      'cluster_distance' => array(
-        'default' => 12,
+      'contains' => array(
+        'cluster_distance' => array('default' => 12),
       ),
     );
   }
 
   function options_form(&$form, &$form_state) {
-    parent::options_form($form, $form_state);
-
     // Add a checkbox to enable clustering.
     $more_form['geocluster_enabled'] = array(
       '#type' => 'checkbox',
       '#title' => 'Enable geocluster for this search.',
-      '#default_value' => $this->options['geocluster_enabled'],
-      '#description' => t("description"),
+      '#default_value' => $this->display->get_option('geocluster_enabled'),
+      '#description' => t("@todo: description"),
     );
+
     // An additional fieldset provides additional options.
+    $geocluster_options = $this->display->get_option('geocluster_options');
     $more_form['geocluster_options'] = array(
       '#type' => 'fieldset',
       '#title' => 'Geocluster options',
-      // '#tree' => TRUE,
+      '#tree' => TRUE,
       '#states' => array(
         'visible' => array(
           ':input[name="geocluster_enabled"]' => array('checked' => TRUE),
@@ -39,7 +39,7 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     $more_form['geocluster_options']['cluster_distance'] = array(
       '#type' => 'textfield',
       '#title' => t('Cluster distance'),
-      '#default_value' => $this->options['geocluster_options']['cluster_distance'],
+      '#default_value' => $geocluster_options['cluster_distance'],
       '#description' => t('Specify the cluster distance.'),
     );
 
@@ -47,6 +47,11 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
   }
 
   function options_validate(&$form, &$form_state) {
+  }
+
+  function options_submit(&$form, &$form_state) {
+    $this->display->set_option('geocluster_enabled', $form_state['values']['geocluster_enabled']);
+    $this->display->set_option('geocluster_options', $form_state['values']['geocluster_options']);
   }
 
 }

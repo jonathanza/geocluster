@@ -58,63 +58,6 @@ function geocluster_views_data_alter(&$data) {
 }
 
 /**
- * Invokes clustering after the views query has been executed.
- *
- * Implements hook_views_post_execute_query.
- */
-function geocluster_views_post_execute_query(&$view) {
-
-  foreach ($view->field as $key => $my_field) {
-    if ($my_field->definition['handler'] == 'geocluster_handler_field_geofield') {
-      $field = $my_field;
-    }
-  }
-  if (!isset($field)) {
-    return;
-  }
-
-  $cluster_distance = $field->options['cluster_distance'];
-
-  // @todo: Implement bbox logic and calculate zoom from bbox.
-
-  // Default zoom
-  $zoom = 7;
-  switch ($view->style_plugin->plugin_name) {
-    case 'leaflet':
-      $map = $view->style_plugin->options['map'];
-      $info =  leaflet_map_get_info($map);
-      $zoom = $info['settings']['zoom'];
-      break;
-    case 'views_geojson':
-      break;
-    case 'geofield_map':
-      $style_options = $view->display_handler->display->display_options['style_options'];
-      $zoom = $style_options['geofield_map_zoom'];
-  }
-
-  // Allow to override using get paramters for debugging purposes.
-  $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
-  $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
-  $cluster = new Geocluster($cluster_distance, $zoom, $field);
-  $cluster->cluster($view);
-}
-
-/**
- * Adds geocluster information to a leaflet data item.
- *
- * Implements hook_leaflet_views_alter_points_data.
- */
-function geocluster_leaflet_views_alter_points_data($result, &$points) {
-  if (isset($result->clustered)) {
-    // Add cluster info to every points data entry.
-    array_walk($points, function(&$point, $key, $count) {
-      $point['clustered'] = TRUE;
-      $point['cluster_items'] = $count;
-    }, count($result->ids));
-  }
-}
-
-/**
  * Implements hook_views_plugins().
  *
  * Adds GeoJSON feed style.
