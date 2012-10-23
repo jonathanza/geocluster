@@ -51,6 +51,16 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
         'score' => NULL,
       );
 
+      // mock entity properties for SearchApiViewsQuery::addResults()
+      // $row['_entity_properties'] += $result['fields'];
+      $latlon_field = "t_field_place:latlon";
+      $latlon = explode(",", $result['cluster_items'][0]->{$latlon_field}[0]);
+      $result['fields'] = array(
+        'nid' => $result['cluster_items'][0]->item_id,
+        'field_place:lat' => $latlon[0],
+        'field_place:lon' => $latlon[1],
+      );
+
       // Use the result's id as the array key. By default, 'id' is mapped to
       // 'item_id' in SearchApiSolrService::getFieldNames().
       if ($result['id']) {
