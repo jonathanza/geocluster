@@ -4,15 +4,19 @@ define('GEOHASH_PRECISION', 12);
 
 class GeohashHelper {
 
-  static function getNeighbors($geohash) {
+  static function getTopRightNeighbors($geohash) {
     // Return only top-right neighbors according to the structure of geohash.
     $neighbors = array();
-    $neighbors[0] = GeoHashUtils::calcNeighbors($geohash, 'top');
-    $neighbors[1] = GeoHashUtils::calcNeighbors($neighbors[0], 'right');
-    $neighbors[2] = GeoHashUtils::calcNeighbors($geohash, 'right');
-    //return array();
+    $top = GeoHashUtils::calcNeighbors($geohash, 'top');
+    $neighbors[0] = GeoHashUtils::calcNeighbors($top, 'left');
+    $neighbors[1] = $top;
+    $neighbors[2] = GeoHashUtils::calcNeighbors($top, 'right');
+    $neighbors[3] = GeoHashUtils::calcNeighbors($geohash, 'right');
     return $neighbors;
-    // return GeoHashUtils::getNeighbors($geohash);
+  }
+
+  static function getNeighbors($geohash) {
+    return GeoHashUtils::getNeighbors($geohash);
   }
 
   /**

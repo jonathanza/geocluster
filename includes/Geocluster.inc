@@ -43,20 +43,10 @@ class Geocluster {
    * @param $view View containing the result set to cluster.
    */
   public function cluster(&$view) {
-
     geophp_load();
-
     $values = &$view->result;
-
-    if(TRUE) {
-      // Geohash-based sort algorithm.
-      $this->geohashCluster($values);
-    }
-    else {
-      // Simple sort algorithm.
-      $this->simpleCluster($values);
-    }
-
+    // Geohash-based sort algorithm.
+    $this->geohashCluster($values);
   }
 
   function geohashCluster(&$values) {
@@ -78,54 +68,40 @@ class Geocluster {
 
     // Loop over geohash-based pre-clusters to create real clusters.
     foreach ($entities_by_geohash as $current_hash => &$entities) {
-      $cluster = NULL;
-
+      $cluster_id = NULL;
       // Add all points within the current geohash to a cluster.
-      foreach ($entities_by_geohash[$current_hash] as $key => &$entity) {
-
-        if (!isset($cluster)) {
-          $cluster = $entity;
+      foreach ($entities as $key => &$entity) {
+        if (!isset($cluster_id)) {
           $cluster_id = $key;
         }
         else {
-          $this->addCluster($values, $cluster_id, $key);
-          unset($entities_by_geohash[$current_hash][$key]);
-          if (count($entities_by_geohash[$current_hash]) == 0) {
-            unset($entities_by_geohash[$current_hash]);
-          }
+          $this->addCluster($values, $cluster_id, $key, $current_hash, $current_hash, $entities_by_geohash);
         }
       }
+      $this->updateCluster($values, $cluster_id);
+    }
 
-      // Check neighbor hashes for overlapping points.
-      $hash_stack = GeohashHelper::getNeighbors($current_hash);
+    // Loop over geohash-based pre-clusters to create real clusters.
+    // Check top right neighbor hashes for overlapping points.
+    // Top-right is enough because by the way geohash is structured,
+    // future geohashes are always top, topright or right
+    foreach ($entities_by_geohash as $current_hash => &$entities) {
+      $item_key = current(array_keys($entities));
+      $item = $entities[$item_key];
+      $hash_stack = GeohashHelper::getTopRightNeighbors($current_hash);
       foreach ($hash_stack as $hash) {
         if (isset($entities_by_geohash[$hash])) {
-          foreach ($entities_by_geohash[$hash] as $key => &$entity) {
-            if ($this->shouldCluster($values, $values[$cluster_id], $values[$key])) {
-              $this->addCluster($values, $cluster_id, $key);
-              unset($entities_by_geohash[$hash][$key]);
-              if (count($entities_by_geohash[$hash]) == 0) {
-                unset($entities_by_geohash[$hash]);
-              }
+          $other_item_key = current(array_keys($entities_by_geohash[$hash]));
+          $other_item = $entities_by_geohash[$hash][$other_item_key];
+          if ($this->shouldCluster($values, $values[$item_key], $values[$other_item_key])) {
+            $this->addCluster($values, $item_key, $other_item_key, $current_hash, $hash, $entities_by_geohash);
+            if (!isset($entities_by_geohash[$current_hash])) {
+              continue 2;
             }
           }
         }
       }
-    }
-  }
-
-  function simpleCluster(&$values) {
-    // Perform clustering.
-    for($i = 0; $i < count($values); $i++) {
-      $value = &$values[$i];
-
-      for($j = $i+1; $j < count($values); $j++) {
-        $value2 = &$values[$j];
-
-        if ($this->shouldCluster($values, $value, $value2)) {
-          $this->addCluster(&$values, $i, $j);
-        }
-      }
+      $this->finalizeCluster($values, $item_key);
     }
   }
 
@@ -136,40 +112,81 @@ class Geocluster {
    * @param $row_id the first row to be clustered
    * @param $row_id2 the second row to be clustered
    */
-  protected function addCluster(&$values, $row_id, $row_id2) {
+  protected function addCluster(&$values, $row_id, $row_id2, $hash, $hash2, &$entities_by_geohash) {
     $result1 = &$values[$row_id];
     $result2 = &$values[$row_id2];
-
     $field_alias = $this->field_handler->field_alias;
 
-    $cluster = &$result1;
-    // @todo: make a real cluster, currently it still links to the first result.
-    if (!isset($cluster->clustered)) {
-      $cluster->node_title = 'Cluster: ' . $result1->node_title;
-      $cluster->ids = array(
-        $result1->{$field_alias}
-      );
-      $cluster->clustered = TRUE;
-    }
-    $cluster->node_title .= ' + ' . $result2->node_title;
-
-    if (isset($result2->{$field_alias})) {
-      $cluster->ids = array_merge($cluster->ids, array($result2->{$field_alias}));
+    if ($result1->clustered || !$result2->clustered) {
+      $cluster = &$result1;
+      $other = &$result2;
+      $other_id = $row_id2;
+      $other_hash = $hash2;
     }
     else {
-      $cluster->ids += array_merge($cluster->ids, $result2->ids);
+      $cluster = &$result2;
+      $other = &$result1;
+      $other_id = $row_id;
+      $other_hash = $hash;
     }
+
+    // @todo: make a real cluster.
+    if (!isset($cluster->clustered)) {
+      $cluster->cluster_items = array($cluster);
+      $cluster->clustered = TRUE;
+    }
+
+    if (!$other->clustered) {
+      $cluster->cluster_items[] = $other;
+    }
+    else {
+      $cluster->cluster_items = array_merge($cluster->cluster_items, $other->cluster_items);
+    }
+
     // Avoid cluster being treated as a normal item.
+    // @todo: necessary?
     if (isset($cluster->{$field_alias})) {
       unset($cluster->{$field_alias});
     }
 
-    $geofield = &$this->get_geofield_with_geometry($result1, $field_alias);
-    $geofield2 = &$this->get_geofield_with_geometry($result2, $field_alias);
-    $center = new MultiPoint(array($geofield['geometry'], $geofield2['geometry']));
+    unset($values[$other_id]);
+    unset($entities_by_geohash[$other_hash][$other_id]);
 
-    $geofield = geofield_get_values_from_geometry($center->centroid());
-    unset($values[$row_id2]);
+    if (count($entities_by_geohash[$other_hash]) == 0) {
+      unset($entities_by_geohash[$other_hash]);
+    }
+  }
+
+  protected function updateCluster(&$values, $cluster_id) {
+    $cluster = &$values[$cluster_id];
+    if ($cluster->clustered) {
+      $field_alias = $this->field_handler->field_alias;
+
+      // Calculate new center from all points.
+      $geometries = array();
+      foreach ($cluster->cluster_items as $cluster_item) {
+        $cluster_item_geofield = $this->get_geofield_with_geometry($cluster_item, $field_alias);
+        $geometries[] = $cluster_item_geofield['geometry'];
+      }
+      $center = new MultiPoint($geometries);
+
+      // Overwrite cluster geofield with center value.
+      $geofield = $this->get_geofield_with_geometry($cluster, $field_alias);
+      $geofield = geofield_get_values_from_geometry($center->centroid());
+    }
+  }
+
+  protected function finalizeCluster(&$values, $cluster_id) {
+    $cluster = &$values[$cluster_id];
+    if ($cluster->clustered) {
+      $field_alias = $this->field_handler->field_alias;
+      $cluster->ids = array();
+      $cluster->node_title = 'Cluster ';
+      foreach ($cluster->cluster_items as $cluster_item) {
+        $cluster->node_title .= '- ' . $cluster_item->node_title;
+        $cluster->ids[] = $cluster_item->{$field_alias};
+      }
+    }
   }
 
   /**
@@ -249,7 +266,7 @@ class Geocluster {
         }
       }
     }
-    asort($entities_by_geohash);
+    ksort($entities_by_geohash);
     return $entities_by_geohash;
   }
 
