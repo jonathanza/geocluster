@@ -94,7 +94,7 @@ class Geocluster {
           $other_item_key = current(array_keys($entities_by_geohash[$hash]));
           $other_item = $entities_by_geohash[$hash][$other_item_key];
           if ($this->shouldCluster($values, $values[$item_key], $values[$other_item_key])) {
-            $this->addCluster($values, $item_key, $other_item_key, $current_hash, $hash, $entities_by_geohash);
+            $this->addCluster($values, $item_key, $other_item_key, $current_hash, $hash, $entities_by_geohash, TRUE);
             if (!isset($entities_by_geohash[$current_hash])) {
               continue 2;
             }
@@ -112,12 +112,12 @@ class Geocluster {
    * @param $row_id the first row to be clustered
    * @param $row_id2 the second row to be clustered
    */
-  protected function addCluster(&$values, $row_id, $row_id2, $hash, $hash2, &$entities_by_geohash) {
+  protected function addCluster(&$values, $row_id, $row_id2, $hash, $hash2, &$entities_by_geohash, $update_center = FALSE) {
     $result1 = &$values[$row_id];
     $result2 = &$values[$row_id2];
     $field_alias = $this->field_handler->field_alias;
 
-    if ($result1->clustered || !$result2->clustered) {
+    if (isset($result1->clustered) || !isset($result2->clustered)) {
       $cluster = &$result1;
       $other = &$result2;
       $other_id = $row_id2;
@@ -136,11 +136,20 @@ class Geocluster {
       $cluster->clustered = TRUE;
     }
 
-    if (!$other->clustered) {
+    if (!isset($other->clustered)) {
       $cluster->cluster_items[] = $other;
     }
     else {
       $cluster->cluster_items = array_merge($cluster->cluster_items, $other->cluster_items);
+    }
+
+    if ($update_center) {
+      // Calculate new center from all points.
+      $center = $this->getCenter(array($cluster, $other));
+
+      // Overwrite cluster geofield with center value.
+      $geofield = geofield_get_values_from_geometry($center->centroid());
+      $this->set_geofield($cluster, $geofield);
     }
 
     // Avoid cluster being treated as a normal item.
@@ -159,9 +168,34 @@ class Geocluster {
 
   protected function updateCluster(&$values, $cluster_id) {
     $cluster = &$values[$cluster_id];
-    if ($cluster->clustered) {
+    if (isset($cluster->clustered)) {
       $field_alias = $this->field_handler->field_alias;
 
+      // Calculate new center from all points.
+      $center = $this->getCenter($cluster->cluster_items);
+
+      // Overwrite cluster geofield with center value.
+      $geofield = geofield_get_values_from_geometry($center->centroid());
+      $this->set_geofield($cluster, $geofield);
+    }
+  }
+
+  protected function getCenter($items) {
+    foreach ($items as $item) {
+      $item_geofield = $this->get_geofield_with_geometry($item, $this->field_handler->field_alias);
+      $lat_min = isset($lat_min) ? min($lat_min, $item_geofield['lat']) : $item_geofield['lat'];
+      $lat_max = isset($lat_max) ? max($lat_max, $item_geofield['lat']) : $item_geofield['lat'];
+      $lon_min = isset($lon_min) ? min($lon_min, $item_geofield['lon']) : $item_geofield['lon'];
+      $lon_max = isset($lon_max) ? max($lon_max, $item_geofield['lon']) : $item_geofield['lon'];
+    }
+    $lat = ($lat_max + $lat_min) / 2;
+    $lon = ($lon_max + $lon_min) / 2;
+    $center = new Point($lon, $lat);
+    return $center;
+  }
+
+    /*
+    protected function getCenter($items) {
       // Calculate new center from all points.
       $geometries = array();
       foreach ($cluster->cluster_items as $cluster_item) {
@@ -169,16 +203,13 @@ class Geocluster {
         $geometries[] = $cluster_item_geofield['geometry'];
       }
       $center = new MultiPoint($geometries);
-
-      // Overwrite cluster geofield with center value.
-      $geofield = $this->get_geofield_with_geometry($cluster, $field_alias);
       $geofield = geofield_get_values_from_geometry($center->centroid());
     }
-  }
+    */
 
   protected function finalizeCluster(&$values, $cluster_id) {
     $cluster = &$values[$cluster_id];
-    if ($cluster->clustered) {
+    if (isset($cluster->clustered)) {
       $field_alias = $this->field_handler->field_alias;
       $cluster->ids = array();
       $cluster->node_title = 'Cluster ';
@@ -289,5 +320,9 @@ class Geocluster {
       $geofield['geohash'] = $geofield['geometry']->out('geohash');
     }
     return $geofield;
+  }
+
+  function set_geofield(&$value, &$geofield) {
+    $value->_field_data[$this->field_handler->field_alias]['entity']->{$this->field_handler->field_info['field_name']}[LANGUAGE_NONE][0] = $geofield;
   }
 }
