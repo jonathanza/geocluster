@@ -13,14 +13,19 @@ class Geocluster {
   var $field_handler;
 
   /**
-   * @var current zoom resolution for clustering in meters / pixel.
-   *
+   * @var current zoom level for clustering.
+   */
+  var $zoom_level;
+
+  /**
+   * @var resolution in meters / pixel based on zoom_level.
    * @see GeoclusterHelper::resultions().
    */
   var $resolution;
 
-  var $zoom_level;
-
+  /**
+   * @var minimum cluster distance, as defined by GeoclusterViewsDisplayExtender.
+   */
   var $cluster_distance;
 
   function __construct($cluster_distance, $zoom, $field_handler) {

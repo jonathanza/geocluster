@@ -22,13 +22,15 @@ function geocluster_views_api() {
 /**
  * Invokes clustering after the views query has been executed.
  *
- * Implements hook_views_post_execute_query.
+ * Implements hook_views_post_execute_query().
  */
 function geocluster_views_post_execute_query(&$view) {
+  // Check if geocluster is enabled for this view.
   $enabled = $view->display_handler->get_option('geocluster_enabled');
   if (empty($enabled)) {
     return;
   }
+  // Get geocluster options.
   $geocluster_options = $view->display_handler->get_option('geocluster_options');
   $cluster_distance = $geocluster_options['cluster_distance'];
   $field_name = $geocluster_options['cluster_field'];
@@ -36,8 +38,6 @@ function geocluster_views_post_execute_query(&$view) {
     return;
   }
   $cluster_field = $view->field[$field_name];
-
-  // @todo: Implement bbox logic and calculate zoom from bbox.
 
   // Default zoom
   $zoom = 7;
@@ -54,7 +54,7 @@ function geocluster_views_post_execute_query(&$view) {
       $zoom = $style_options['geofield_map_zoom'];
   }
 
-  // Allow to override using get paramters for debugging purposes.
+  // Allow to override using get paramters.
   $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
   $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
   $cluster = new Geocluster($cluster_distance, $zoom, $cluster_field);
@@ -64,7 +64,7 @@ function geocluster_views_post_execute_query(&$view) {
 /**
  * Adds geocluster information to a leaflet data item.
  *
- * Implements hook_leaflet_views_alter_points_data.
+ * Implements hook_leaflet_views_alter_points_data().
  */
 function geocluster_leaflet_views_alter_points_data($result, &$points) {
   if (isset($result->clustered)) {
@@ -76,17 +76,25 @@ function geocluster_leaflet_views_alter_points_data($result, &$points) {
   }
 }
 
-function geocluster_add_geojson_cluster_info(&$feature, $cluster_items) {
-  $feature['clustered'] = TRUE;
-  $feature['cluster_items'] = $cluster_items;
-}
-
+/**
+ * Adds geocluster information to a views_geojson result.
+ *
+ * Implements hook_views_geojson_render_fields_alter().
+ */
 function geocluster_views_geojson_render_fields_alter(&$feature, $view, $row, $index) {
   if (!empty($row->clustered)) {
     geocluster_add_geojson_cluster_info($feature, count($row->ids));
   }
 }
 
+function geocluster_add_geojson_cluster_info(&$feature, $cluster_items) {
+  $feature['clustered'] = TRUE;
+  $feature['cluster_items'] = $cluster_items;
+}
+
+/**
+ * Implements theme_preprocess_leaflet_map().
+ */
 function geocluster_preprocess_leaflet_map($variables) {
   drupal_add_js(
     drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.marker.js',
