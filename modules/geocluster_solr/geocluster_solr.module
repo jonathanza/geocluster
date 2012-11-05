@@ -27,18 +27,18 @@ function geocluster_solr_search_api_data_type_info() {
 function geocluster_solr_search_api_service_info() {
   $services['geocluster_solr_service'] = array(
     'name' => t('Geocluster Solr service'),
-    /* @todo: update description */
-    'description' => t('<p>Geocluster Index items using an Apache Solr search server.</p>' .
-        '<ul>' . '<li>All field types are supported and indexed in a special way, with URI/String and Integer/Duration being equivalent.</li>' .
-        '<li>See <a href="@url">the Solr wiki</a> for information about the "direct" parse mode.</li>' .
-        '<li>Supports the search_api_facets and search_api_multi features.</li>' .
-        '<li>Will use internal Solr preprocessors, so Search API preprocessors should for the most part be deactivated.</li>' .
-        '<li>See the README.txt file provided with this module for details.</li>' . '</ul>',
-      array('@url' => url('http://wiki.apache.org/solr/SolrQuerySyntax'))),
+    'description' => t('<p>Geocluster-specific index based on the standard Search API Solr server.</p>'),
     'class' => 'GeoclusterSearchApiSolrService',
   );
   return $services;
 }
+
+function geocluster_search_api_views_pre_execute(&$query, &$view) {
+  if ($geocluster = geocluster_get_instance($view)) {
+    $query->setOption("geocluster", $geocluster);
+  }
+}
+
 
 function geocluster_solr_views_geojson_render_fields_alter(&$feature, $view, $row, $index) {
   if (isset($row->_entity_properties) && !empty($row->_entity_properties['cluster'])) {
