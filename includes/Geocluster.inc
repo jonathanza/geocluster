@@ -8,11 +8,7 @@
 class Geocluster {
 
   /**
-   * @todo: don't rely on a custom field handler,
-   * use another type of views plugin instead.
-   * we might want to make views_object_types() pluggable?
-   *
-   * @var Geofield (geocluster) field handler on which to perform clustering.
+   * @var reference to Geofield field handler on which to perform clustering.
    */
   var $field_handler;
 
@@ -152,12 +148,6 @@ class Geocluster {
       $this->set_geofield($cluster, $geofield);
     }
 
-    // Avoid cluster being treated as a normal item.
-    // @todo: necessary?
-    if (isset($cluster->{$field_alias})) {
-      unset($cluster->{$field_alias});
-    }
-
     unset($values[$other_id]);
     unset($entities_by_geohash[$other_hash][$other_id]);
 
@@ -194,19 +184,6 @@ class Geocluster {
     return $center;
   }
 
-    /*
-    protected function getCenter($items) {
-      // Calculate new center from all points.
-      $geometries = array();
-      foreach ($cluster->cluster_items as $cluster_item) {
-        $cluster_item_geofield = $this->get_geofield_with_geometry($cluster_item, $field_alias);
-        $geometries[] = $cluster_item_geofield['geometry'];
-      }
-      $center = new MultiPoint($geometries);
-      $geofield = geofield_get_values_from_geometry($center->centroid());
-    }
-    */
-
   protected function finalizeCluster(&$values, $cluster_id) {
     $cluster = &$values[$cluster_id];
     if (isset($cluster->clustered)) {
@@ -216,6 +193,10 @@ class Geocluster {
       foreach ($cluster->cluster_items as $cluster_item) {
         $cluster->node_title .= '- ' . $cluster_item->node_title;
         $cluster->ids[] = $cluster_item->{$field_alias};
+      }
+      // Avoid cluster being treated as a normal item.
+      if (isset($cluster->{$field_alias})) {
+        unset($cluster->{$field_alias});
       }
     }
   }
