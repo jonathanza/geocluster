@@ -8,32 +8,48 @@
 class Geocluster {
 
   /**
-   * @var reference to Geofield field handler on which to perform clustering.
+   * Reference to Geofield field handler on which to perform clustering.
+   *
+   * @var views_handler_field
    */
   var $field_handler;
 
   /**
-   * @var current zoom level for clustering.
+   * Minimum cluster distance, as defined by GeoclusterViewsDisplayExtender.
+   *
+   * @var float
+   */
+  var $cluster_distance;
+
+  /**
+   * Current zoom level for clustering.
+   *
+   * @var int
    */
   var $zoom_level;
 
   /**
-   * @var resolution in meters / pixel based on zoom_level.
+   * Resolution in meters / pixel based on zoom_level.
    * @see GeoclusterHelper::resultions().
+   *
+   * @var float
    */
   var $resolution;
 
   /**
-   * @var minimum cluster distance, as defined by GeoclusterViewsDisplayExtender.
+   * Geohash length for clustering by a specified distance in pixels.
+   *
+   * @var int
    */
-  var $cluster_distance;
+  var $geohash_length;
 
   function __construct($cluster_distance, $zoom, $field_handler) {
+    $this->field_handler = $field_handler;
     $this->cluster_distance = $cluster_distance;
     $this->zoom_level = $zoom;
     $resolutions = GeoclusterHelper::resolutions();
     $this->resolution = $resolutions[$zoom];
-    $this->field_handler = $field_handler;
+    $this->geohash_length = GeohashHelper::lengthFromDistance($this->cluster_distance, $this->resolution);
   }
 
   /**
@@ -55,15 +71,14 @@ class Geocluster {
     $entities_by_type = $this->entities_by_type($values);
 
     // Generate geohash-based pre-clusters.
-    $geohash_length = GeohashHelper::lengthFromDistance($this->cluster_distance, $this->resolution);
-    $entities_by_geohash = $this->load_entity_fields($entities_by_type, $values, $geohash_length);
+    $entities_by_geohash = $this->load_entity_fields($entities_by_type, $values, $this->geohash_length);
 
     // @todo: Remove debug code.
     $debug =
       "zoom: " . $this->zoom_level .
       " , resolution: " . $this->resolution .
       " , distance: " . $this->cluster_distance .
-      " , geohash_length: " . $geohash_length;
+      " , geohash_length: " . $this->geohash_length;
     // print($debug);
     dd($debug);
 
@@ -311,4 +326,40 @@ class Geocluster {
   function set_geofield(&$value, &$geofield) {
     $value->_field_data[$this->field_handler->field_alias]['entity']->{$this->field_handler->field_info['field_name']}[LANGUAGE_NONE][0] = $geofield;
   }
+
+  /**
+   * @return float
+   */
+  public function getClusterDistance() {
+    return $this->cluster_distance;
+  }
+
+  /**
+   * @return \views_handler_field
+   */
+  public function getFieldHandler() {
+    return $this->field_handler;
+  }
+
+  /**
+   * @return float
+   */
+  public function getResolution() {
+    return $this->resolution;
+  }
+
+  /**
+   * @return int
+   */
+  public function getZoomLevel() {
+    return $this->zoom_level;
+  }
+
+  /**
+   * @return int
+   */
+  public function getGeohashLength() {
+    return $this->geohash_length;
+  }
+
 }

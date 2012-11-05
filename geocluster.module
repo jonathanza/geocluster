@@ -25,6 +25,12 @@ function geocluster_views_api() {
  * Implements hook_views_post_execute_query().
  */
 function geocluster_views_post_execute_query(&$view) {
+  if ($cluster = geocluster_get_instance($view)) {
+    $cluster->cluster($view);
+  };
+}
+
+function geocluster_get_instance(&$view) {
   // Check if geocluster is enabled for this view.
   $enabled = $view->display_handler->get_option('geocluster_enabled');
   if (empty($enabled)) {
@@ -58,7 +64,7 @@ function geocluster_views_post_execute_query(&$view) {
   $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
   $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
   $cluster = new Geocluster($cluster_distance, $zoom, $cluster_field);
-  $cluster->cluster($view);
+  return $cluster;
 }
 
 /**
