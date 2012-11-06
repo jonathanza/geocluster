@@ -71,6 +71,10 @@ class Geocluster {
   public function cluster(&$view) {
     geophp_load();
     $values = &$view->result;
+
+    dd("started clustering " . count($values) . " items");
+    timer_start("geocluster");
+
     // Geohash-based sort algorithm.
     $this->geohashCluster($values);
   }
@@ -81,6 +85,8 @@ class Geocluster {
 
     // Generate geohash-based pre-clusters.
     $entities_by_geohash = $this->load_entity_fields($entities_by_type, $values, $this->geohash_length);
+
+    dd("prepared entities: " . timer_read("geocluster"));
 
     // Loop over geohash-based pre-clusters to create real clusters.
     foreach ($entities_by_geohash as $current_hash => &$entities) {
@@ -96,6 +102,8 @@ class Geocluster {
       }
       $this->updateCluster($values, $cluster_id);
     }
+
+    dd("created clusters: " . timer_read("geocluster"));
 
     // Loop over geohash-based pre-clusters to create real clusters.
     // Check top right neighbor hashes for overlapping points.
@@ -119,6 +127,9 @@ class Geocluster {
       }
       $this->finalizeCluster($values, $item_key);
     }
+
+    dd("merged & finalized clusters: " . timer_read("geocluster"));
+    timer_stop("geocluster");
   }
 
   /**
