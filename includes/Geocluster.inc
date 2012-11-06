@@ -50,6 +50,15 @@ class Geocluster {
     $resolutions = GeoclusterHelper::resolutions();
     $this->resolution = $resolutions[$zoom];
     $this->geohash_length = GeohashHelper::lengthFromDistance($this->cluster_distance, $this->resolution);
+
+    // @todo: Remove debug code.
+    $debug =
+        "zoom: " . $this->zoom_level .
+        " , resolution: " . $this->resolution .
+        " , distance: " . $this->cluster_distance .
+        " , geohash_length: " . $this->geohash_length;
+    // print($debug);
+    dd($debug);
   }
 
   /**
@@ -72,15 +81,6 @@ class Geocluster {
 
     // Generate geohash-based pre-clusters.
     $entities_by_geohash = $this->load_entity_fields($entities_by_type, $values, $this->geohash_length);
-
-    // @todo: Remove debug code.
-    $debug =
-      "zoom: " . $this->zoom_level .
-      " , resolution: " . $this->resolution .
-      " , distance: " . $this->cluster_distance .
-      " , geohash_length: " . $this->geohash_length;
-    // print($debug);
-    dd($debug);
 
     // Loop over geohash-based pre-clusters to create real clusters.
     foreach ($entities_by_geohash as $current_hash => &$entities) {
