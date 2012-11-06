@@ -29,6 +29,13 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
    *     SearchApiQueryInterface::execute().
    */
   protected function extractResults(SearchApiQueryInterface $query, Apache_Solr_Response $response) {
+    $field_clusters = "clusters";
+    $field_docs = "docs";
+    $field_center = "locs_center";
+    $field_doc_ids = "sm_doc_ids";
+    $field_count = "is_count";
+    $field_id = "ss_id";
+
     $index = $query->getIndex();
     $fields = $this->getFieldNames($index);
     $field_options = $index->options['fields'];
@@ -38,44 +45,50 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
     $results['results'] = array();
     // In some rare cases (e.g., MLT query with nonexistent ID) the response
     // will be NULL.
-    if (!isset($response->grouped)) { // This is named grouped instead of response
+    if (!isset($response->clusters)) { // This is named grouped instead of response
       $results['result count'] = 0;
       return $results;
     }
 
     $total_count = 0;
-    $groups = $response->grouped->{$this->cluster_field}->groups;
+    $clusters = $response->{$field_clusters};
+    $docs = $clusters->{$field_docs};
 
     // Add each search result to the results array.
-    foreach ($groups as $group) {
+    foreach ($docs as $cluster) {
 
-      $total_count += $group->doclist->numFound;
-      $result = array(
-        'id' => $group->groupValue,
-        'score' => NULL,
-      );
+      if ($cluster->{$field_count}) {
+        $count = $cluster->{$field_count};
+        $latlon = explode(",", $cluster->{$field_center});
+        $doc_ids = $cluster->{$field_doc_ids};
+        $id = $doc_ids[0];
 
-      // mock entity properties for SearchApiViewsQuery::addResults()
-      // $row['_entity_properties'] += $result['fields'];
-      $latlon = explode(",", $group->doclist->docs[0]->{$this->latlon_field}[0]);
-      $result['fields'] = array(
-        // Cluster info.
-        'cluster' => TRUE,
-        'cluster_count' => $group->doclist->numFound,
-        'cluster_items' => $group->doclist->docs,
+        $total_count += $count;
+        $result = array(
+          'id' => $id,
+          'score' => NULL,
+        );
 
-        // Fields.
-        'nid' => $group->doclist->docs[0]->item_id,
-        'field_place:lat' => $latlon[0],
-        'field_place:lon' => $latlon[1],
-      );
+        // mock entity properties for SearchApiViewsQuery::addResults()
+        // $row['_entity_properties'] += $result['fields'];
+        $result['fields'] = array(
+          // Cluster info.
+          'cluster' => TRUE,
+          'cluster_count' => $count,
+          'cluster_items' => $doc_ids,
 
-      // Use the result's id as the array key. By default, 'id' is mapped to
-      // 'item_id' in SearchApiSolrService::getFieldNames().
-      if ($result['id']) {
-        $results['results'][$result['id']] = $result;
+          // Fields.
+          'nid' => $id,
+          'field_place:lat' => $latlon[0],
+          'field_place:lon' => $latlon[1],
+        );
+
+        // Use the result's id as the array key. By default, 'id' is mapped to
+        // 'item_id' in SearchApiSolrService::getFieldNames().
+        if ($result['id']) {
+          $results['results'][$result['id']] = $result;
+        }
       }
-
     }
 
     $results['result count'] = $total_count;
@@ -107,7 +120,7 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
     $this->cluster_field = $geocluster->getFieldHandler()->field;
     $this->group_field = 'f_ss_' . $this->cluster_field . ':geohash_geocluster_index_' . $geocluster->getGeohashLength();
     $this->geohash_field = 'geohashs_' . $this->cluster_field . ':geohash';
-    $this->latlon_field = 't_' . $this->cluster_field . ':latlon';
+    $this->latlon_field = 'locs_' . $this->cluster_field . ':latlon';
     $this->id_field = 'ss_search_api_id';
 
     // Geocluster specific params.
