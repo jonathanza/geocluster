@@ -122,10 +122,10 @@ function geocluster_preprocess_leaflet_map($variables) {
  */
 function geocluster_entity_property_info_alter(&$info) {
   foreach ($info as &$entity_type) {
-    geocluster_geofield_add_geohash_property($entity_type);
+    geocluster_add_geohash_property($entity_type);
     if (isset($entity_type['bundles'])) {
       foreach ($entity_type['bundles'] as &$bundle) {
-        geocluster_geofield_add_geohash_property($bundle);
+        geocluster_add_geohash_property($bundle);
       }
     }
   }
@@ -134,7 +134,7 @@ function geocluster_entity_property_info_alter(&$info) {
 /**
  * Helper function that adds geohash property for a geofield.
  */
-function geocluster_geofield_add_geohash_property(&$value) {
+function geocluster_add_geohash_property(&$value) {
   if (isset($value['properties'])) {
     foreach ($value['properties'] as &$property) {
       if (isset($property['type']) && $property['type'] == 'geofield') {
@@ -142,29 +142,16 @@ function geocluster_geofield_add_geohash_property(&$value) {
           'label' => t('Geohash'),
           'type' => 'string',
           'description' => t('Returns the location as geohash'),
-          'getter callback' => 'geocluster_geofield_geohash_property_get_callback',
+          'getter callback' => 'geocluster_geohash_property_get_callback',
           'computed' => TRUE,
         );
-
-        // We don't use the index array,
-        // as group.facet for multivalued is only SOLR 4.0
-        // see http://wiki.apache.org/solr/FieldCollapsing
-        /*
-        $property['property info']['geohash_geocluster_index'] = array(
-          'label' => t('Geohash geocluster index'),
-          'type' => 'list<string>',
-          'description' => t('Returns the location as geohash'),
-          'getter callback' => 'geocluster_geofield_geohash_geocluster_index_property_get_callback',
-          'computed' => TRUE,
-        );
-        */
 
         for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
-          $property['property info']['geohash_geocluster_index_' . $i] = array(
-            'label' => t('Geohash geocluster index ' . $i),
+          $property['property info']['geocluster_index_' . $i] = array(
+            'label' => t('Geocluster index ' . $i),
             'type' => 'string',
             'description' => t('Returns the location as geohash with length ' . $i),
-            'getter callback' => 'geocluster_geofield_geohash_geocluster_index_property_get_callback',
+            'getter callback' => 'geocluster_index_property_get_callback',
             'geohash length' => $i,
             'computed' => TRUE,
           );
@@ -174,17 +161,25 @@ function geocluster_geofield_add_geohash_property(&$value) {
   }
 }
 
-/**
- * Getter callback for a geofield geohash property.
- */
-function geocluster_geofield_geohash_property_get_callback($entity, array $options, $name, $type, $info) {
+function geocluster_get_geohash($geom) {
   geophp_load();
-  $geometry = geoPHP::load($entity['geom']);
+  $geometry = geoPHP::load($geom);
   return $geometry->out('geohash');
 }
 
+function geocluster_get_geohash_prefix($geohash, $length) {
+  return $length . '_' . substr($geohash, 0, min($length, strlen($geohash)));
+}
+
 /**
- * Returns an array of geohash prefixes numbered by length.
+ * Getter callback for a geofield geohash property.
+ */
+function geocluster_geohash_property_get_callback($entity, array $options, $name, $type, $info) {
+  return geocluster_get_geohash($entity['geom']);
+}
+
+/**
+ * Returns geohash prefixes numbered by length.
  *
  * see http://stackoverflow.com/questions/11319465/geoclusters-in-solr/11321723#11321723
  *
@@ -194,18 +189,66 @@ function geocluster_geofield_geohash_property_get_callback($entity, array $optio
  *   3_u2s
  *   ...
  */
-function geocluster_geofield_geohash_geocluster_index_property_get_callback($entity, array $options, $name, $type, $info) {
-  $geohash = geocluster_geofield_geohash_property_get_callback($entity, $options, $name, $type, $info);
+function geocluster_index_property_get_callback($entity, array $options, $name, $type, $info) {
+  $geohash = geocluster_geohash_property_get_callback($entity, $options, $name, $type, $info);
   // Output an specifc geohash prefix by the specified length.
   if (isset($info['geohash length'])) {
     $length = min($info['geohash length'], strlen($geohash));
-    return substr($geohash, 0, $length);
+    return  geocluster_get_geohash_prefix($geohash, $length);
   }
   // No length specified.
   // Output an array of all geohash prefixed numbered by their length.
   $geohash_index = array();
   for ($i = strlen($geohash); $i > 0; $i--) {
-    $geohash_index[] = $i . '_' . substr($geohash, 0, $i);
+    $geohash_index[] = geocluster_get_geohash_prefix($geohash, $i);
   }
   return $geohash_index;
+}
+
+function geocluster_field_attach_presave($entity_type, $entity) {
+  // Add geohash information for columns we have added.
+  $field_info = field_info_field_by_ids();
+  foreach (field_info_instances($entity_type, $entity->type) as $name => $field_info_instance) {
+    if ('geofield' === $field_info[$field_info_instance['field_id']]['type']) {
+      $field = &$entity->{$name}[LANGUAGE_NONE][0];
+      $geohash = geocluster_get_geohash($field['geom']);
+
+      // Add data for standard geohash column.
+      $field['geohash'] = $geohash;
+
+      // Add data for geohash prefix columns.
+      for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
+        $field['geocluster_index_' . $i] = geocluster_get_geohash_prefix($geohash, $i);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_field_schema_alter().
+ */
+function geocluster_field_schema_alter(&$schema, $field) {
+  if ($field['type'] == 'geofield') {
+    // Add an addtional column of data.
+    $schema['columns']['geohash'] = array(
+      'description' => "Geohash.",
+      'type' => 'varchar',
+      'length' => 128,
+      'not null' => FALSE,
+    );
+    // Add an additional index.
+    $schema['indexes']['fid_geohash'] = array('fid', 'geohash');
+
+    for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
+      $name = 'geocluster_index_' . $i;
+      $schema['columns'][$name] = array(
+        'description' => 'Geocluster index ' . $i,
+        'type' => 'varchar',
+        'length' => 128,  // could be $i + 3.
+        'not null' => FALSE,
+      );
+      // Add an additional index.
+      $schema['indexes']['fid_' . $name] = array('fid', $name);
+    }
+  }
 }

@@ -9,6 +9,7 @@ dependencies[] = geofield
 ; Views GeoJSON integration doesn't exist at the moment.
 ;dependencies[] = views_geojson
 
+files[] = geocluster.install
 files[] = includes/Geocluster.inc
 files[] = includes/GeoclusterHelper.inc
 files[] = includes/GeohashHelper.inc
