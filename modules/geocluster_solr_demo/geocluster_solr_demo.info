@@ -1,0 +1,12 @@
+name = geocluster_solr_demo
+core = 7.x
+package = Features
+dependencies[] = geocluster
+dependencies[] = geocluster_solr
+dependencies[] = search_api
+dependencies[] = views
+features[ctools][] = views:views_default:3.0
+features[features_api][] = api:1
+features[search_api_index][] = geocluster_index
+features[search_api_server][] = geocluster_server
+features[views_view][] = search_api_geocluster
