@@ -156,6 +156,8 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     $group_column = 'geocluster_index_' . $this->geocluster->getGeohashLength();
     $field->options['group_column'] = $group_column;
 
+    // Add select fields required for formatter.
+    $this->add_fields(array($field->field . '_' . 'geom'), 'min', $field);
     // Add avg(lat), avg(lng) as additional fields.
     $avg_fields = array(
       'geocluster_lat' => $field->field . '_' . 'lat',
@@ -166,11 +168,12 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     $this->add_fields(array('entity_id'), 'count', $field);
   }
 
-  function add_fields($additional_fields, $function, &$field) {
+  function add_fields($additional_fields, $function = NULL, &$field) {
     foreach ($additional_fields as $field_key => $additional_field) {
-      $params = array(
-        'function' => $function,
-      );
+      $params = array();
+      if (!empty($function)) {
+        $params['function'] = $function;
+      }
       $this->view->query->add_field($field->table, $additional_field, $field_key, $params);
     }
   }

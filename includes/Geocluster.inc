@@ -94,6 +94,9 @@ class Geocluster {
       $group_field = $this->get_cluster_field_alias();
       foreach ($values as $row => $value) {
         $hash_prefix = $value->$group_field;
+        if (empty($hash_prefix)) {
+          continue;
+        }
 
         $lon = $value->geocluster_lon;
         $lat = $value->geocluster_lat;
@@ -266,6 +269,8 @@ class Geocluster {
         unset($cluster->{$field_alias});
       }
     }
+    $geofield = geofield_get_values_from_geometry($cluster->geocluster_geometry);
+    $this->set_geofield($cluster, $geofield);
   }
 
   /**
@@ -371,7 +376,14 @@ class Geocluster {
   }
 
   function set_geofield(&$value, &$geofield) {
-    $value->_field_data[$this->field_handler->field_alias]['entity']->{$this->field_handler->field_info['field_name']}[LANGUAGE_NONE][0] = $geofield;
+    $data = &$value->_field_data[$this->field_handler->field_alias];
+    $data['entity']->{$this->field_handler->field_info['field_name']}[LANGUAGE_NONE][0] = $geofield;
+    /*
+    if (!isset($data['entity_type'])) {
+      $data['entity_type'] = "node";
+    }
+    $data['entity']['type'] = 'article';
+    */
   }
 
   /**
