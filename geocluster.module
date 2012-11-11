@@ -30,41 +30,14 @@ function geocluster_views_post_execute_query(&$view) {
   };
 }
 
+/**
+ * @param $view view
+ */
 function geocluster_get_instance(&$view) {
-  // Check if geocluster is enabled for this view.
-  $enabled = $view->display_handler->get_option('geocluster_enabled');
-  if (empty($enabled)) {
-    return;
+  $i = 1;
+  if ($cluster = $view->display_handler->get_option('geocluster_instance')) {
+    return $cluster;
   }
-  // Get geocluster options.
-  $geocluster_options = $view->display_handler->get_option('geocluster_options');
-  $cluster_distance = $geocluster_options['cluster_distance'];
-  $field_name = $geocluster_options['cluster_field'];
-  if (empty($view->field[$field_name])) {
-    return;
-  }
-  $cluster_field = $view->field[$field_name];
-
-  // Default zoom
-  $zoom = 7;
-  switch ($view->style_plugin->plugin_name) {
-    case 'leaflet':
-      $map = $view->style_plugin->options['map'];
-      $info =  leaflet_map_get_info($map);
-      $zoom = $info['settings']['zoom'];
-      break;
-    case 'views_geojson':
-      break;
-    case 'geofield_map':
-      $style_options = $view->display_handler->display->display_options['style_options'];
-      $zoom = $style_options['geofield_map_zoom'];
-  }
-
-  // Allow to override using get paramters.
-  $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
-  $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
-  $cluster = new Geocluster($cluster_distance, $zoom, $cluster_field);
-  return $cluster;
 }
 
 /**
@@ -250,5 +223,34 @@ function geocluster_field_schema_alter(&$schema, $field) {
       // Add an additional index.
       $schema['indexes']['fid_' . $name] = array('fid', $name);
     }
+  }
+}
+
+/**
+ * @param $view
+ * @param $query views_plugin_query
+ */
+function geocluster_views_query_alter(&$view, &$query) {
+  // (Example assuming a view with an exposed filter on node title.)
+  // If the input for the title filter is a positive integer, filter against
+  // node ID instead of node title.
+  if ($view->name == 'grouptest') {
+    $i = 1;
+      /*
+    // Traverse through the 'where' part of the query.
+    foreach ($query->where as &$condition_group) {
+      foreach ($condition_group['conditions'] as &$condition) {
+        // If this is the part of the query filtering on title, chang the
+        // condition to filter on node ID.
+        if ($condition['field'] == 'node.title') {
+          $condition = array(
+            'field' => 'node.nid',
+            'value' => $view->exposed_raw_input['title'],
+            'operator' => '=',
+          );
+        }
+      }
+    }
+      */
   }
 }

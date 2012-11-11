@@ -7,6 +7,11 @@ define('GEOCLUSTER_DEFAULT_DISTANCE', 12);
 
 class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
 
+  /**
+   * @var Geocluster
+   */
+  var $geocluster;
+
   function options_definition_alter(&$options) {
     // options_definition() doesn't work for display_extender plugins.
     // see http://drupal.org/node/681468#comment-4384814
@@ -32,12 +37,12 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
       $more_form['geocluster_enabled'] = array(
         '#type' => 'checkbox',
         '#title' => 'Enable geocluster for this search.',
-        '#default_value' => $this->display->get_option('geocluster_enabled'),
+        '#default_value' => $this->get_option('geocluster_enabled'),
         '#description' => t("@todo: description"),
       );
 
       // An additional fieldset provides additional options.
-      $geocluster_options = $this->display->get_option('geocluster_options');
+      $geocluster_options = $this->get_option('geocluster_options');
       $more_form['geocluster_options'] = array(
         '#type' => 'fieldset',
         '#title' => 'Geocluster options',
@@ -88,4 +93,98 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     }
     return $cluster_field_options;
   }
+
+  function pre_execute() {
+    if ($this->get_option('geocluster_enabled')) {
+      if ($this->geocluster = $this->init_geocluster()) {
+
+      }
+
+      if($this->get_option('group_by')) {
+        foreach ($this->view->field as $field_key => $field) {
+          if ($field->options['group_type'] == 'group' && $field->field_info['type'] == 'geofield') {
+            $this->add_cluster_group_by_settings($field);
+          }
+        }
+      };
+    }
+  }
+
+  function init_geocluster() {
+    $view = $this->view;
+
+    // Get geocluster options.
+    $geocluster_options = $this->get_option('geocluster_options');
+    $cluster_distance = $geocluster_options['cluster_distance'];
+    $field_name = $geocluster_options['cluster_field'];
+    if (empty($view->field[$field_name])) {
+      return;
+    }
+    $cluster_field = $view->field[$field_name];
+
+    // Default zoom.
+    $zoom = 7;
+    // @todo: make this a separate function or hook
+    switch ($view->style_plugin->plugin_name) {
+      case 'leaflet':
+        $map = $view->style_plugin->options['map'];
+        $info =  leaflet_map_get_info($map);
+        $zoom = $info['settings']['zoom'];
+        break;
+      case 'views_geojson':
+        break;
+      case 'geofield_map':
+        $style_options = $view->display_handler->display->display_options['style_options'];
+        $zoom = $style_options['geofield_map_zoom'];
+    }
+
+    // Allow to override using get paramters.
+    $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
+    $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
+
+    // Create geocluster instance.
+    $cluster = new Geocluster($cluster_distance, $zoom, $cluster_field);
+    $this->set_option('geocluster_instance', $cluster);
+    return $cluster;
+  }
+
+
+  /**
+   * @param $field views_handler_field
+   */
+  function add_cluster_group_by_settings(&$field) {
+    $group_column = 'geocluster_index_' . $this->geocluster->getGeohashLength();
+    $field->options['group_column'] = $group_column;
+
+    // Add avg(lat), avg(lng) as additional fields.
+    $avg_fields = array(
+      'geocluster_lat' => $field->field . '_' . 'lat',
+      'geocluster_lon' => $field->field . '_' . 'lon',
+    );
+    $this->add_fields($avg_fields, 'avg', $field);
+    // Add count(entity_id) as additional field.
+    $this->add_fields(array('entity_id'), 'count', $field);
+  }
+
+  function add_fields($additional_fields, $function, &$field) {
+    foreach ($additional_fields as $field_key => $additional_field) {
+      $params = array(
+        'function' => $function,
+      );
+      $this->view->query->add_field($field->table, $additional_field, $field_key, $params);
+    }
+  }
+
+  /** HELPERS */
+
+  function get_option($option) {
+    return $this->display->get_option($option);
+  }
+
+  function set_option($option, $value) {
+    return $this->display->set_option($option, $value);
+  }
+
 }
+
+

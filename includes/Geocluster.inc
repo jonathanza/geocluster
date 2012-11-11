@@ -61,6 +61,15 @@ class Geocluster {
     dd($debug);
   }
 
+  function get_cluster_field_alias() {
+    $name = $this->get_cluster_field_name();
+    return $this->field_handler->aliases[$name];
+  }
+
+  function get_cluster_field_name() {
+    return current($this->field_handler->group_fields);
+  }
+
   /**
    * Perform clustering on a given views result set.
    *
@@ -80,28 +89,26 @@ class Geocluster {
   }
 
   function geohashCluster(&$values) {
-    // Prepare input data & parameters.
-    $entities_by_type = $this->entities_by_type($values);
+    $use_database_cluster = TRUE;
+    if ($use_database_cluster) {
+      $group_field = $this->get_cluster_field_alias();
+      foreach ($values as $row => $value) {
+        $hash_prefix = $value->$group_field;
 
-    // Generate geohash-based pre-clusters.
-    $entities_by_geohash = $this->load_entity_fields($entities_by_type, $values, $this->geohash_length);
+        $lon = $value->geocluster_lon;
+        $lat = $value->geocluster_lat;
+        $value->geocluster_geometry = new Point($lon, $lat);
+
+        $results_by_geohash[$hash_prefix] = array(
+          $row => $value,
+        );
+      }
+    }
+    else {
+      $this->clusterByHash($values);
+    }
 
     dd("prepared entities: " . timer_read("geocluster"));
-
-    // Loop over geohash-based pre-clusters to create real clusters.
-    foreach ($entities_by_geohash as $current_hash => &$entities) {
-      $cluster_id = NULL;
-      // Add all points within the current geohash to a cluster.
-      foreach ($entities as $key => &$entity) {
-        if (!isset($cluster_id)) {
-          $cluster_id = $key;
-        }
-        else {
-          $this->addCluster($values, $cluster_id, $key, $current_hash, $current_hash, $entities_by_geohash);
-        }
-      }
-      $this->updateCluster($values, $cluster_id);
-    }
 
     dd("created clusters: " . timer_read("geocluster"));
 
@@ -109,17 +116,20 @@ class Geocluster {
     // Check top right neighbor hashes for overlapping points.
     // Top-right is enough because by the way geohash is structured,
     // future geohashes are always top, topright or right
-    foreach ($entities_by_geohash as $current_hash => &$entities) {
-      $item_key = current(array_keys($entities));
-      $item = $entities[$item_key];
+    foreach ($results_by_geohash as $current_hash => &$results) {
+      if (empty($current_hash)) {
+        continue;
+      }
+      $item_key = current(array_keys($results));
+      $item = $results[$item_key];
       $hash_stack = GeohashHelper::getTopRightNeighbors($current_hash);
       foreach ($hash_stack as $hash) {
-        if (isset($entities_by_geohash[$hash])) {
-          $other_item_key = current(array_keys($entities_by_geohash[$hash]));
-          $other_item = $entities_by_geohash[$hash][$other_item_key];
+        if (isset($results_by_geohash[$hash])) {
+          $other_item_key = current(array_keys($results_by_geohash[$hash]));
+          $other_item = $results_by_geohash[$hash][$other_item_key];
           if ($this->shouldCluster($values, $values[$item_key], $values[$other_item_key])) {
-            $this->addCluster($values, $item_key, $other_item_key, $current_hash, $hash, $entities_by_geohash, TRUE);
-            if (!isset($entities_by_geohash[$current_hash])) {
+            $this->addCluster($values, $item_key, $other_item_key, $current_hash, $hash, $results_by_geohash, TRUE);
+            if (!isset($results_by_geohash[$current_hash])) {
               continue 2;
             }
           }
@@ -130,6 +140,28 @@ class Geocluster {
 
     dd("merged & finalized clusters: " . timer_read("geocluster"));
     timer_stop("geocluster");
+  }
+
+  protected function clusterByHash(&$values) {
+    // Prepare input data & parameters.
+    $entities_by_type = $this->entities_by_type($values);
+    // Generate geohash-based pre-clusters.
+    $results_by_geohash = $this->load_entity_fields($entities_by_type, $values, $this->geohash_length);
+
+    // Loop over geohash-based pre-clusters to create real clusters.
+    foreach ($results_by_geohash as $current_hash => &$entities) {
+      $cluster_id = NULL;
+      // Add all points within the current geohash to a cluster.
+      foreach ($entities as $key => &$entity) {
+        if (!isset($cluster_id)) {
+          $cluster_id = $key;
+        }
+        else {
+          $this->addCluster($values, $cluster_id, $key, $current_hash, $current_hash, $results_by_geohash);
+        }
+      }
+      $this->updateCluster($values, $cluster_id);
+    }
   }
 
   /**
@@ -174,9 +206,12 @@ class Geocluster {
       // Calculate new center from all points.
       $center = $this->getCenter(array($cluster, $other));
 
+      $cluster->geocluster_geometry = $center;
+
+      // php version
       // Overwrite cluster geofield with center value.
-      $geofield = geofield_get_values_from_geometry($center->centroid());
-      $this->set_geofield($cluster, $geofield);
+      // $geofield = geofield_get_values_from_geometry($center->centroid());
+      // $this->set_geofield($cluster, $geofield);
     }
 
     unset($values[$other_id]);
@@ -203,11 +238,12 @@ class Geocluster {
 
   protected function getCenter($items) {
     foreach ($items as $item) {
-      $item_geofield = $this->get_geofield_with_geometry($item, $this->field_handler->field_alias);
-      $lat_min = isset($lat_min) ? min($lat_min, $item_geofield['lat']) : $item_geofield['lat'];
-      $lat_max = isset($lat_max) ? max($lat_max, $item_geofield['lat']) : $item_geofield['lat'];
-      $lon_min = isset($lon_min) ? min($lon_min, $item_geofield['lon']) : $item_geofield['lon'];
-      $lon_max = isset($lon_max) ? max($lon_max, $item_geofield['lon']) : $item_geofield['lon'];
+      $lat = $item->geocluster_geometry->getY();
+      $lon = $item->geocluster_geometry->getX();
+      $lat_min = isset($lat_min) ? min($lat_min, $lat) : $lat;
+      $lat_max = isset($lat_max) ? max($lat_max, $lat) : $lat;
+      $lon_min = isset($lon_min) ? min($lon_min, $lon) : $lon;
+      $lon_max = isset($lon_max) ? max($lon_max, $lon) : $lon;
     }
     $lat = ($lat_max + $lat_min) / 2;
     $lon = ($lon_max + $lon_min) / 2;
@@ -239,11 +275,11 @@ class Geocluster {
     $field_alias = $this->field_handler->field_alias;
 
     // Load geofields.
-    $geofield = $this->get_geofield_with_geometry($value, $field_alias);
-    $geofield2 = $this->get_geofield_with_geometry($value2, $field_alias);
+    $geometry = $value->geocluster_geometry;
+    $geometry2 = $value2->geocluster_geometry;
 
     // Calculate distance.
-    $distance = GeoclusterHelper::distance_pixels($geofield['geometry'], $geofield2['geometry'], $this->resolution);
+    $distance = GeoclusterHelper::distance_pixels($geometry, $geometry2, $this->resolution);
     return $distance <= $this->cluster_distance;
   }
 
