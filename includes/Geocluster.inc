@@ -376,7 +376,9 @@ class Geocluster {
   }
 
   function set_geofield(&$value, &$geofield) {
-    $data = &$value->_field_data[$this->field_handler->field_alias];
+    $data = &$value->geocluster_center;
+
+    // $data = &$value->_field_data[$this->field_handler->field_alias];
     $data['entity']->{$this->field_handler->field_info['field_name']}[LANGUAGE_NONE][0] = $geofield;
     /*
     if (!isset($data['entity_type'])) {

@@ -20,6 +20,44 @@ function geocluster_views_plugins() {
   return $plugins;
 }
 
+function geocluster_views_data_alter(&$data) {
+  $fields = field_info_fields();
+  foreach ($fields as $field) {
+    if ($field['type'] == 'geofield') {
+      $table_name = 'field_data_' . $field['field_name'];
+      // We could add the field name as prefix but we don't for handler simplicity.
+      $geocluster_field = 'geocluster';
+      $data[$table_name][$geocluster_field . '_count'] = array(
+        'group' => 'Content',
+        'title' => 'Geocluster result count',
+        'help' => 'Geocluster result count',
+        'field' => array(
+          'table' => $table_name,
+          'handler' => 'geocluster_handler_field_numeric',
+        ),
+      );
+      $data[$table_name][$geocluster_field . '_lat'] = array(
+        'group' => 'Content',
+        'title' => 'Geocluster lat',
+        'help' => 'Geocluster lat',
+        'field' => array(
+          'table' => $table_name,
+          'handler' => 'geocluster_handler_field_numeric',
+        ),
+      );
+      $data[$table_name][$geocluster_field . '_lon'] = array(
+        'group' => 'Content',
+        'title' => 'Geocluster lon',
+        'help' => 'Geocluster lon',
+        'field' => array(
+          'table' => $table_name,
+          'handler' => 'geocluster_handler_field_numeric',
+        ),
+      );
+    }
+  }
+}
+
 /**
  * Register a geocluster field handler for every geofield.
  *
