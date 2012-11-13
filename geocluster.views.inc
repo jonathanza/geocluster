@@ -27,6 +27,15 @@ function geocluster_views_data_alter(&$data) {
       $table_name = 'field_data_' . $field['field_name'];
       // We could add the field name as prefix but we don't for handler simplicity.
       $geocluster_field = 'geocluster';
+      $data[$table_name][$geocluster_field . '_ids'] = array(
+        'group' => 'Content',
+        'title' => 'Geocluster ids',
+        'help' => 'Geocluster ids',
+        'field' => array(
+          'table' => $table_name,
+          'handler' => 'geocluster_handler_field_default',
+        ),
+      );
       $data[$table_name][$geocluster_field . '_count'] = array(
         'group' => 'Content',
         'title' => 'Geocluster result count',

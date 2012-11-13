@@ -102,8 +102,8 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
 
       if($this->get_option('group_by')) {
         foreach ($this->view->field as $field_key => $field) {
-          if ($field->options['group_type'] == 'group' && $field->field_info['type'] == 'geofield') {
-            $this->add_cluster_group_by_settings($field);
+          if (isset($field->field_info) && $field->field_info['type'] == 'geofield') {
+            $this->add_geocluster_group_by_settings($field);
           }
         }
       };
@@ -124,8 +124,12 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
 
     // Default zoom.
     $zoom = 7;
+
+    // Add customizations based on style plugin.
     // @todo: make this a separate function or hook
-    switch ($view->style_plugin->plugin_name) {
+    $display = $view->display[$view->current_display];
+    $style_plugin_name = $display->display_options['style_plugin'];
+    switch ($style_plugin_name) {
       case 'leaflet':
         $map = $view->style_plugin->options['map'];
         $info =  leaflet_map_get_info($map);
@@ -148,24 +152,30 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     return $cluster;
   }
 
-
   /**
    * @param $field views_handler_field
    */
-  function add_cluster_group_by_settings(&$field) {
+  function add_geocluster_group_by_settings(&$field) {
     $group_column = 'geocluster_index_' . $this->geocluster->getGeohashLength();
     $field->options['group_column'] = $group_column;
 
-    // Add select fields required for formatter.
-    $this->add_fields(array($field->field . '_' . 'geom'), 'min', $field);
-    // Add avg(lat), avg(lng) as additional fields.
+    // Add additional fields.
+    // Add concatenated list of grouped entity ids.
+    $this->add_fields(array('geocluster_ids' => 'entity_id'), 'group_concat', $field);
+
+    // Add count(entity_id).
+    $this->add_fields(array('entity_id'), 'count', $field);
+
+    // Add center point: avg(lat), avg(lng).
     $avg_fields = array(
       'geocluster_lat' => $field->field . '_' . 'lat',
       'geocluster_lon' => $field->field . '_' . 'lon',
     );
     $this->add_fields($avg_fields, 'avg', $field);
-    // Add count(entity_id) as additional field.
-    $this->add_fields(array('entity_id'), 'count', $field);
+
+    // Add select fields required for field formatter.
+    // @todo: Remove? We don't support clustered data to be used with field formatters at the moment.
+    // $this->add_fields(array($field->field . '_' . 'geom'), 'min', $field);
   }
 
   function add_fields($additional_fields, $function = NULL, &$field) {
