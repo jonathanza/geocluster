@@ -135,6 +135,21 @@ class GeoclusterHelper {
     );
   }
 
+  static function getCenter($items) {
+    foreach ($items as $item) {
+      $lat = $item->geocluster_geometry->getY();
+      $lon = $item->geocluster_geometry->getX();
+      $lat_min = isset($lat_min) ? min($lat_min, $lat) : $lat;
+      $lat_max = isset($lat_max) ? max($lat_max, $lat) : $lat;
+      $lon_min = isset($lon_min) ? min($lon_min, $lon) : $lon;
+      $lon_max = isset($lon_max) ? max($lon_max, $lon) : $lon;
+    }
+    $lat = ($lat_max + $lat_min) / 2;
+    $lon = ($lon_max + $lon_min) / 2;
+    $center = new Point($lon, $lat);
+    return $center;
+  }
+
   /*
   // other, simpler distance implementations that didn't really work out.
 

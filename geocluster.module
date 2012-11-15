@@ -1,14 +1,11 @@
 <?php
 
+require_once 'geocluster.geohash.inc';
+
 /**
  * @file
  * Geocluster extension for geofield and maps.
  */
-
-/**
- * Diameter of the Earth in kilometers.
- */
-define('GEOCLUSTER_GEOHASH_LENGTH', 12);
 
 /**
  * Implements hook_views_api().
@@ -25,19 +22,9 @@ function geocluster_views_api() {
  * Implements hook_views_post_execute_query().
  */
 function geocluster_views_post_execute_query(&$view) {
-  if ($cluster = geocluster_get_instance($view)) {
+  if ($cluster = _geocluster_get_instance($view)) {
     $cluster->cluster($view);
   };
-}
-
-/**
- * @param $view view
- */
-function geocluster_get_instance(&$view) {
-  $i = 1;
-  if ($cluster = $view->display_handler->get_option('geocluster_instance')) {
-    return $cluster;
-  }
 }
 
 /**
@@ -62,13 +49,8 @@ function geocluster_leaflet_views_alter_points_data($result, &$points) {
  */
 function geocluster_views_geojson_render_fields_alter(&$feature, $view, $row, $index) {
   if (!empty($row->clustered)) {
-    geocluster_add_geojson_cluster_info($feature, count($row->ids));
+    _geocluster_add_geojson_cluster_info($feature, count($row->ids));
   }
-}
-
-function geocluster_add_geojson_cluster_info(&$feature, $cluster_items) {
-  $feature['clustered'] = TRUE;
-  $feature['cluster_items'] = $cluster_items;
 }
 
 /**
@@ -88,169 +70,26 @@ function geocluster_preprocess_leaflet_map($variables) {
   );
 }
 
+/*** INTERNAL HELPERS ***/
+
 /**
- * Add geohash property for all geofields.
+ * Retrieves the geocluster instance from a given view.
  *
- * Implements hook_entity_property_info_alter().
+ * @param $view view
  */
-function geocluster_entity_property_info_alter(&$info) {
-  foreach ($info as &$entity_type) {
-    geocluster_add_geohash_property($entity_type);
-    if (isset($entity_type['bundles'])) {
-      foreach ($entity_type['bundles'] as &$bundle) {
-        geocluster_add_geohash_property($bundle);
-      }
-    }
+function _geocluster_get_instance(&$view) {
+  if ($cluster = $view->display_handler->get_option('geocluster_instance')) {
+    return $cluster;
   }
 }
 
 /**
- * Helper function that adds geohash property for a geofield.
- */
-function geocluster_add_geohash_property(&$value) {
-  if (isset($value['properties'])) {
-    foreach ($value['properties'] as &$property) {
-      if (isset($property['type']) && $property['type'] == 'geofield') {
-        $property['property info']['geohash'] = array(
-          'label' => t('Geohash'),
-          'type' => 'string',
-          'description' => t('Returns the location as geohash'),
-          'getter callback' => 'geocluster_geohash_property_get_callback',
-          'computed' => TRUE,
-        );
-
-        for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
-          $property['property info']['geocluster_index_' . $i] = array(
-            'label' => t('Geocluster index ' . $i),
-            'type' => 'string',
-            'description' => t('Returns the location as geohash with length ' . $i),
-            'getter callback' => 'geocluster_index_property_get_callback',
-            'geohash length' => $i,
-            'computed' => TRUE,
-          );
-        }
-      }
-    }
-  }
-}
-
-function geocluster_get_geohash($geom) {
-  geophp_load();
-  $geometry = geoPHP::load($geom);
-  return $geometry->out('geohash');
-}
-
-function geocluster_get_geohash_prefix($geohash, $length) {
-  return $length . '_' . substr($geohash, 0, min($length, strlen($geohash)));
-}
-
-/**
- * Getter callback for a geofield geohash property.
- */
-function geocluster_geohash_property_get_callback($entity, array $options, $name, $type, $info) {
-  return geocluster_get_geohash($entity['geom']);
-}
-
-/**
- * Returns geohash prefixes numbered by length.
+ * Adds cluster info to a views_geojson feature.
  *
- * see http://stackoverflow.com/questions/11319465/geoclusters-in-solr/11321723#11321723
- *
- * example:
- *   1_u
- *   2_u2
- *   3_u2s
- *   ...
+ * @param $feature
+ * @param $cluster_items
  */
-function geocluster_index_property_get_callback($entity, array $options, $name, $type, $info) {
-  $geohash = geocluster_geohash_property_get_callback($entity, $options, $name, $type, $info);
-  // Output an specifc geohash prefix by the specified length.
-  if (isset($info['geohash length'])) {
-    $length = min($info['geohash length'], strlen($geohash));
-    return  geocluster_get_geohash_prefix($geohash, $length);
-  }
-  // No length specified.
-  // Output an array of all geohash prefixed numbered by their length.
-  $geohash_index = array();
-  for ($i = strlen($geohash); $i > 0; $i--) {
-    $geohash_index[] = geocluster_get_geohash_prefix($geohash, $i);
-  }
-  return $geohash_index;
-}
-
-function geocluster_field_attach_presave($entity_type, $entity) {
-  // Add geohash information for columns we have added.
-  $field_info = field_info_field_by_ids();
-  foreach (field_info_instances($entity_type, $entity->type) as $name => $field_info_instance) {
-    if ('geofield' === $field_info[$field_info_instance['field_id']]['type']) {
-      $field = &$entity->{$name}[LANGUAGE_NONE][0];
-      $geohash = geocluster_get_geohash($field['geom']);
-
-      // Add data for standard geohash column.
-      $field['geohash'] = $geohash;
-
-      // Add data for geohash prefix columns.
-      for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
-        $field['geocluster_index_' . $i] = geocluster_get_geohash_prefix($geohash, $i);
-      }
-    }
-  }
-}
-
-/**
- * Implements hook_field_schema_alter().
- */
-function geocluster_field_schema_alter(&$schema, $field) {
-  if ($field['type'] == 'geofield') {
-    // Add an addtional column of data.
-    $schema['columns']['geohash'] = array(
-      'description' => "Geohash.",
-      'type' => 'varchar',
-      'length' => 128,
-      'not null' => FALSE,
-    );
-    // Add an additional index.
-    $schema['indexes']['fid_geohash'] = array('fid', 'geohash');
-
-    for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
-      $name = 'geocluster_index_' . $i;
-      $schema['columns'][$name] = array(
-        'description' => 'Geocluster index ' . $i,
-        'type' => 'varchar',
-        'length' => 128,  // could be $i + 3.
-        'not null' => FALSE,
-      );
-      // Add an additional index.
-      $schema['indexes']['fid_' . $name] = array('fid', $name);
-    }
-  }
-}
-
-/**
- * @param $view
- * @param $query views_plugin_query
- */
-function geocluster_views_query_alter(&$view, &$query) {
-  // (Example assuming a view with an exposed filter on node title.)
-  // If the input for the title filter is a positive integer, filter against
-  // node ID instead of node title.
-  if ($view->name == 'grouptest') {
-    $i = 1;
-      /*
-    // Traverse through the 'where' part of the query.
-    foreach ($query->where as &$condition_group) {
-      foreach ($condition_group['conditions'] as &$condition) {
-        // If this is the part of the query filtering on title, chang the
-        // condition to filter on node ID.
-        if ($condition['field'] == 'node.title') {
-          $condition = array(
-            'field' => 'node.nid',
-            'value' => $view->exposed_raw_input['title'],
-            'operator' => '=',
-          );
-        }
-      }
-    }
-      */
-  }
+function _geocluster_add_geojson_cluster_info(&$feature, $cluster_items) {
+  $feature['clustered'] = TRUE;
+  $feature['cluster_items'] = $cluster_items;
 }

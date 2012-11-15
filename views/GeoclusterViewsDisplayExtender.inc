@@ -127,8 +127,7 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
 
     // Add customizations based on style plugin.
     // @todo: make this a separate function or hook
-    $display = $view->display[$view->current_display];
-    $style_plugin_name = $display->display_options['style_plugin'];
+    $style_plugin_name = $this->get_option('style_plugin');
     switch ($style_plugin_name) {
       case 'leaflet':
         $map = $view->style_plugin->options['map'];
@@ -164,7 +163,7 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     $this->add_fields(array('geocluster_ids' => 'entity_id'), 'group_concat', $field);
 
     // Add count(entity_id).
-    $this->add_fields(array('entity_id'), 'count', $field);
+    $this->add_fields(array('geocluster_count' => 'entity_id'), 'count', $field);
 
     // Add center point: avg(lat), avg(lng).
     $avg_fields = array(

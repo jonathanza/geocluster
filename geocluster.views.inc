@@ -46,6 +46,7 @@ function geocluster_views_data_alter(&$data) {
         ),
       );
       $data[$table_name][$geocluster_field . '_lat'] = array(
+        'real field' => $field['field_name'] . '_lat',
         'group' => 'Content',
         'title' => 'Geocluster lat',
         'help' => 'Geocluster lat',
@@ -55,6 +56,7 @@ function geocluster_views_data_alter(&$data) {
         ),
       );
       $data[$table_name][$geocluster_field . '_lon'] = array(
+        'real field' => $field['field_name'] . '_lon',
         'group' => 'Content',
         'title' => 'Geocluster lon',
         'help' => 'Geocluster lon',
