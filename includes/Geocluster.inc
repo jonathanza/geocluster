@@ -150,6 +150,24 @@ class Geocluster {
   }
 
   /**
+   * Determine if two geofields should be clustered as of their distance.
+   */
+  protected function shouldCluster($value, $value2) {
+    // Calculate distance.
+    $distance = GeoclusterHelper::distance_pixels($value->geocluster_geometry, $value2->geocluster_geometry, $this->resolution);
+    return $distance <= $this->cluster_distance;
+  }
+
+  protected function get_cluster_field_alias() {
+    $name = $this->get_cluster_field_name();
+    return $this->field_handler->aliases[$name];
+  }
+
+  protected function get_cluster_field_name() {
+    return current($this->field_handler->group_fields);
+  }
+
+  /**
    * Cluster two given rows.
    *
    * @param $values all result rows
@@ -175,25 +193,6 @@ class Geocluster {
       unset($entities_by_geohash[$hash2]);
     }
   }
-
-  /**
-   * Determine if two geofields should be clustered as of their distance.
-   */
-  protected function shouldCluster($value, $value2) {
-    // Calculate distance.
-    $distance = GeoclusterHelper::distance_pixels($value->geocluster_geometry, $value2->geocluster_geometry, $this->resolution);
-    return $distance <= $this->cluster_distance;
-  }
-
-  protected function get_cluster_field_alias() {
-    $name = $this->get_cluster_field_name();
-    return $this->field_handler->aliases[$name];
-  }
-
-  protected function get_cluster_field_name() {
-    return current($this->field_handler->group_fields);
-  }
-
 
   /*** GETTERS & SETTERS ***/
 
