@@ -5,6 +5,8 @@
  */
 define('GEOCLUSTER_DEFAULT_DISTANCE', 12);
 
+define('GEOCLUSTER_VIEWS_SECTION', 'style_options');
+
 class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
 
   /**
@@ -26,58 +28,57 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
   }
 
   function options_form(&$form, &$form_state) {
-    $cluster_field_options = $this->get_cluster_field_options();
-    if (count($cluster_field_options) == 1) {
-      $more_form['error'] = array(
-        '#markup' => 'Please add at least 1 geofield to the view',
-      );
-    }
-    else {
-      // Add a checkbox to enable clustering.
-      $more_form['geocluster_enabled'] = array(
-        '#type' => 'checkbox',
-        '#title' => 'Enable geocluster for this search.',
-        '#default_value' => $this->get_option('geocluster_enabled'),
-        '#description' => t("@todo: description"),
-      );
+    parent::options_form($form, $form_state);
 
-      // An additional fieldset provides additional options.
-      $geocluster_options = $this->get_option('geocluster_options');
-      $more_form['geocluster_options'] = array(
-        '#type' => 'fieldset',
-        '#title' => 'Geocluster options',
-        '#tree' => TRUE,
-        '#states' => array(
-          'visible' => array(
-            ':input[name="geocluster_enabled"]' => array('checked' => TRUE),
-          ),
-        ),
-      );
-      $more_form['geocluster_options']['cluster_field'] = array(
-        '#type' => 'select',
-        '#title' => t('Cluster field'),
-        '#description' => t('Which field contains the geodata for clustering?'),
-        '#options' => $cluster_field_options,
-        '#default_value' => $geocluster_options['cluster_field'] ? $geocluster_options['cluster_field'] : '',
-      );
-      $more_form['geocluster_options']['cluster_distance'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Cluster distance'),
-        '#default_value' => $geocluster_options['cluster_distance'],
-        '#description' => t('Specify the cluster distance.'),
-      );
-
+    if ($form_state['section'] == GEOCLUSTER_VIEWS_SECTION && isset($form[GEOCLUSTER_VIEWS_SECTION])) {
+      $cluster_field_options = $this->get_cluster_field_options();
+      if (count($cluster_field_options) == 1) {
+        $more_form['error'] = array(
+          '#markup' => 'Please add at least 1 geofield to the view',
+        );
       }
+      else {
+        // Add a checkbox to enable clustering.
+        $more_form['geocluster_enabled'] = array(
+          '#type' => 'checkbox',
+          '#title' => 'Enable geocluster for this search.',
+          '#default_value' => $this->get_option('geocluster_enabled'),
+          '#description' => t("@todo: description"),
+        );
 
-    $form = $more_form + $form;
-  }
-
-  function options_validate(&$form, &$form_state) {
+        // An additional fieldset provides additional options.
+        $geocluster_options = $this->get_option('geocluster_options');
+        $more_form['geocluster_options'] = array(
+          '#type' => 'fieldset',
+          '#title' => 'Geocluster options',
+          '#tree' => TRUE,
+          '#states' => array(
+            'visible' => array(
+              ':input[name="geocluster_enabled"]' => array('checked' => TRUE),
+            ),
+          ),
+        );
+        $more_form['geocluster_options']['cluster_field'] = array(
+          '#type' => 'select',
+          '#title' => t('Cluster field'),
+          '#description' => t('Which field contains the geodata for clustering?'),
+          '#options' => $cluster_field_options,
+          '#default_value' => $geocluster_options['cluster_field'] ? $geocluster_options['cluster_field'] : '',
+        );
+        $more_form['geocluster_options']['cluster_distance'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Cluster distance'),
+          '#default_value' => $geocluster_options['cluster_distance'],
+          '#description' => t('Specify the cluster distance.'),
+        );
+      }
+      $form = $more_form + $form;
+    }
   }
 
   function options_submit(&$form, &$form_state) {
-    $this->display->set_option('geocluster_enabled', $form_state['values']['geocluster_enabled']);
-    $this->display->set_option('geocluster_options', $form_state['values']['geocluster_options']);
+    $this->set_option('geocluster_enabled', $form_state['values']['geocluster_enabled']);
+    $this->set_option('geocluster_options', $form_state['values']['geocluster_options']);
   }
 
   function get_cluster_field_options() {
@@ -189,14 +190,29 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
 
   /** HELPERS */
 
-  function get_option($option) {
-    return $this->display->get_option($option);
+  /**
+   * Returns a display option value from the appropriate display (default or overridden).
+   */
+  public function get_option($option) {
+    if ($this->display->is_defaulted(GEOCLUSTER_VIEWS_SECTION) && isset($this->view->display['default'])) {
+      return $this->view->display['default']->handler->get_option($option);
+    }
+    else {
+      return $this->display->get_option($option);
+    }
   }
 
-  function set_option($option, $value) {
-    return $this->display->set_option($option, $value);
+  /*
+    * Sets an option value on the appropriate display (default or overridden).
+    */
+  public function set_option($option, $value) {
+    if ($this->display->is_defaulted(GEOCLUSTER_VIEWS_SECTION) && isset($this->view->display['default'])) {
+      $this->view->display['default']->handler->set_option($option, $value);
+    }
+    else {
+      $this->display->set_option($option, $value);
+    }
   }
-
 }
 
 
