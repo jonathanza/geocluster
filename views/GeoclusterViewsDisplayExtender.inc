@@ -152,10 +152,12 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     return $cluster;
   }
 
+  /** HELPERS */
+
   /**
    * @param $field views_handler_field
    */
-  function add_geocluster_group_by_settings(&$field) {
+  protected function add_geocluster_group_by_settings(&$field) {
     $group_column = 'geocluster_index_' . $this->geocluster->getGeohashLength();
     $field->options['group_column'] = $group_column;
 
@@ -178,7 +180,7 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     // $this->add_fields(array($field->field . '_' . 'geom'), 'min', $field);
   }
 
-  function add_fields($additional_fields, $function = NULL, &$field) {
+  protected function add_fields($additional_fields, $function = NULL, &$field) {
     foreach ($additional_fields as $field_key => $additional_field) {
       $params = array();
       if (!empty($function)) {
@@ -188,30 +190,31 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
     }
   }
 
-  /** HELPERS */
-
   /**
-   * Returns a display option value from the appropriate display (default or overridden).
+   * Returns a display option value.
    */
   public function get_option($option) {
-    if ($this->display->is_defaulted(GEOCLUSTER_VIEWS_SECTION) && isset($this->view->display['default'])) {
-      return $this->view->display['default']->handler->get_option($option);
-    }
-    else {
-      return $this->display->get_option($option);
-    }
+    return $this->get_option_handler()->get_option($option);
   }
 
-  /*
-    * Sets an option value on the appropriate display (default or overridden).
-    */
+  /**
+   * Sets an option value.
+   */
   public function set_option($option, $value) {
+    $this->get_option_handler()->set_option($option, $value);
+  }
+
+  /**
+   * Get the appropriate option display handler (default or overridden).
+   *
+   * @return views_display
+   */
+  protected function &get_option_handler() {
     if ($this->display->is_defaulted(GEOCLUSTER_VIEWS_SECTION) && isset($this->view->display['default'])) {
-      $this->view->display['default']->handler->set_option($option, $value);
+      return $this->view->display['default']->handler;
     }
-    else {
-      $this->display->set_option($option, $value);
-    }
+    // Else.
+    return $this->display;
   }
 }
 
