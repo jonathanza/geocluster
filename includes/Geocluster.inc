@@ -90,6 +90,8 @@ class Geocluster {
 
     $this->clusterByNeighborCheck($values, $results_by_geohash);
     dd("merged & finalized clusters: " . timer_read("geocluster"));
+
+    $this->finalizeClusters($values);
     timer_stop("geocluster");
   }
 
@@ -136,6 +138,14 @@ class Geocluster {
             }
           }
         }
+      }
+    }
+  }
+
+  protected function finalizeClusters(&$values) {
+    foreach ($values as &$value) {
+      if ($value->geocluster_count > 1) {
+        $value->clustered = TRUE;
       }
     }
   }

@@ -78,8 +78,8 @@ function geocluster_preprocess_leaflet_map($variables) {
  * @param $view view
  */
 function _geocluster_get_instance(&$view) {
-  if ($cluster = $view->display_handler->get_option('geocluster_instance')) {
-    return $cluster;
+  if (isset($view->display_handler->extender['geocluster'])) {
+    return $view->display_handler->extender['geocluster']->get_option('geocluster_instance');
   }
 }
 
