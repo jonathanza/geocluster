@@ -1,11 +1,9 @@
 api = 2
-core = 7.x
 
-; Use drupal.org drupal via Git.
+core = 7.x
 projects[drupal][type] = core
-projects[drupal][version] = 7
-; No hook_field_schema_alter() http://drupal.org/node/691932#comment-5371474
-projects[drupal][patch][] = http://drupal.org/files/691932_44.patch
+; No hook_field_schema_alter() http://drupal.org/node/691932#comment-6635614
+projects[drupal][patch][] = http://drupal.org/files/field_d7-backport-for-hook_field_schema_alter_691932_58.patch
 
 
 ; Modules
@@ -15,13 +13,15 @@ projects[libraries] = 1
 ; projects[geocluster][version] = 1
 projects[geocluster][download][type] = git
 projects[geocluster][download][branch] = 7.x-1.x
-projects[geocluster][download][revision] = 66ecd97976824dfbfe6bfc7a3fe7ef773cc3bc67
+; projects[geocluster][download][revision] = 66ecd97976824dfbfe6bfc7a3fe7ef773cc3bc67
 
 projects[geofield][version] = 2
 
 projects[leaflet][version] = 1
 ; Add hook_leaflet_views_alter_points_data http://drupal.org/node/1796422
 projects[leaflet][patch][] = http://drupal.org/files/leaflet_views_alter_points_data.patch
+; GeoJSON API changes http://drupal.org/node/1804992
+projects[leaflet][patch][] = http://drupal.org/files/addgeojson_method_doesnt_exist.patch
 
 libraries[leaflet][download][type] = get
 libraries[leaflet][download][url] = https://github.com/CloudMade/Leaflet/zipball/v0.4.4
@@ -49,8 +49,9 @@ projects[geophp][version] = 1
 
 projects[leaflet_geojson] = 1
 projects[bean] = 1
+projects[entity] = 1
 projects[uuid] = 1
-projects[uuid_features] = 1
+projects[uuid_features][version] = 1.x-dev
 ; Add support for Bean exporting (deployable bean instances). http://drupal.org/node/1849668#comment-6777656
 projects[uuid_features][patch][] = http://drupal.org/files/uuid_features-bean_uuid_export_support-1849668-2.patch
 
