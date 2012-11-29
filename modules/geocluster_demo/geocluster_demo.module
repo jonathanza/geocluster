@@ -6,6 +6,10 @@
 
 include_once 'geocluster_demo.features.inc';
 
+function geocluster_demo_install() {
+  variable_set('site_frontpage', 'block/geocluster-test-groupby-json-map');
+}
+
 function geocluster_demo_preprocess_page(&$variables) {
   $item = menu_get_item();
   if ($item['path'] == 'maptable') {

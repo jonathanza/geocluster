@@ -44,6 +44,17 @@ projects[views_geojson][patch][] = http://drupal.org/files/1839554_views_geojson
 
 projects[geophp][version] = 1
 
+
+; Demo modules
+
+projects[leaflet_geojson] = 1
+projects[bean] = 1
+projects[uuid] = 1
+projects[uuid_features] = 1
+; Add support for Bean exporting (deployable bean instances). http://drupal.org/node/1849668#comment-6777656
+projects[uuid_features][patch][] = http://drupal.org/files/uuid_features-bean_uuid_export_support-1849668-2.patch
+
+
 ; Search api for solr support.
 ; Not implemented in demo, yet
 ;projects[search_api][version] = 1
