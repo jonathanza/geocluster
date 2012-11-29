@@ -25,7 +25,7 @@ function geocluster_field_schema_alter(&$schema, $field) {
       'length' => 128,
       'not null' => FALSE,
     );
-    $schema['indexes']['fid_geohash'] = array('fid', 'geohash');
+    // $schema['indexes']['fid_geohash'] = array('fid', 'geohash');
 
     for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
       $name = 'geocluster_index_' . $i;
@@ -35,7 +35,7 @@ function geocluster_field_schema_alter(&$schema, $field) {
         'length' => 128,  // could be $i + 3.
         'not null' => FALSE,
       );
-      $schema['indexes']['fid_' . $name] = array('fid', $name);
+      // $schema['indexes']['fid_' . $name] = array('fid', $name);
     }
   }
 }
