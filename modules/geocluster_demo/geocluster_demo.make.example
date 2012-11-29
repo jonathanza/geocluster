@@ -10,10 +10,10 @@ projects[drupal][patch][] = http://drupal.org/files/field_d7-backport-for-hook_f
 
 projects[libraries] = 1
 
-; projects[geocluster][version] = 1
-projects[geocluster][download][type] = git
-projects[geocluster][download][branch] = 7.x-1.x
-; projects[geocluster][download][revision] = 66ecd97976824dfbfe6bfc7a3fe7ef773cc3bc67
+projects[geocluster][version] = 1
+;projects[geocluster][download][type] = git
+;projects[geocluster][download][branch] = 7.x-1.x
+;projects[geocluster][download][revision] = 510c62a6154a202e468f2160f4c7f0589c9e6593
 
 projects[geofield][version] = 2
 
