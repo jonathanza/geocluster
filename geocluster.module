@@ -83,7 +83,7 @@ function _geocluster_get_instance(&$view) {
  */
 function geocluster_leaflet_geojson_bean_view_features_alter(array &$features, array &$context) {
 // Add geocluster bbox extension js.
-  if ($context['source_info']['useBBox']) {
+  if (isset($context['source_info']['bbox'])) {
     drupal_add_js(
       drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.bbox.js',
       array(
