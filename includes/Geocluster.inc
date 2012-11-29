@@ -96,6 +96,7 @@ class Geocluster {
   }
 
   protected function preClusterByGeohash(&$values) {
+    $total_count = 0;
     $results_by_geohash = array();
     $group_field = $this->get_cluster_field_alias();
     foreach ($values as $row => &$value) {
@@ -103,11 +104,12 @@ class Geocluster {
       if (empty($hash_prefix)) {
         continue;
       }
-      $this->initCluster($value);
+      $total_count += $this->initCluster($value);
       $results_by_geohash[$hash_prefix] = array(
         $row => $value,
       );
     }
+    dd("total items: " . $total_count);
     return $results_by_geohash;
   }
 
@@ -157,6 +159,7 @@ class Geocluster {
     $lat = $value->geocluster_lat;
     $value->geocluster_geometry = new Point($lon, $lat);
     $value->clustered = TRUE;
+    return $value->geocluster_count;
   }
 
   /**
