@@ -6,6 +6,7 @@ dependencies[] = bean
 dependencies[] = bean_uuid
 dependencies[] = ctools
 dependencies[] = devel
+dependencies[] = diff
 dependencies[] = features
 dependencies[] = feeds
 dependencies[] = feeds_ui
