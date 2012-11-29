@@ -49,7 +49,8 @@ function geocluster_leaflet_views_alter_points_data($result, &$points) {
  */
 function geocluster_views_geojson_render_fields_alter(&$feature, $view, $row, $index) {
   if (!empty($row->clustered)) {
-    _geocluster_add_geojson_cluster_info($feature, count($row->ids));
+    $feature['clustered'] = TRUE;
+    $feature['cluster_items'] = $row->geocluster_count;
   }
 }
 
@@ -59,12 +60,6 @@ function geocluster_views_geojson_render_fields_alter(&$feature, $view, $row, $i
 function geocluster_preprocess_leaflet_map($variables) {
   drupal_add_js(
     drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.marker.js',
-    // Add our script after leaflet.drupal.js.
-    array('weight' => 5)
-  );
-
-  drupal_add_js(
-    drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.js',
     // Add our script after leaflet.drupal.js.
     array('weight' => 5)
   );
@@ -84,12 +79,17 @@ function _geocluster_get_instance(&$view) {
 }
 
 /**
- * Adds cluster info to a views_geojson feature.
- *
- * @param $feature
- * @param $cluster_items
+ * Implements hook_leaflet_geojson_bean_view_features_alter().
  */
-function _geocluster_add_geojson_cluster_info(&$feature, $cluster_items) {
-  $feature['clustered'] = TRUE;
-  $feature['cluster_items'] = $cluster_items;
+function geocluster_leaflet_geojson_bean_view_features_alter(array &$features, array &$context) {
+// Add geocluster bbox extension js.
+  if ($context['source_info']['useBBox']) {
+    drupal_add_js(
+      drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.bbox.js',
+      array(
+        // Add our script after leaflet.bbox.js.
+        'weight' => 10
+      )
+    );
+  }
 }
