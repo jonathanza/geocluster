@@ -66,6 +66,7 @@ class Geocluster {
         " , distance: " . $this->cluster_distance .
         " , geohash_length: " . $this->geohash_length;
     // print($debug);
+    dd("");
     dd($debug);
   }
 
@@ -81,6 +82,12 @@ class Geocluster {
   public function cluster(&$view) {
     geophp_load();
     $values = &$view->result;
+
+    $query =  Database::getConnection()->prefixTables(vsprintf($view->build_info['query'], $view->build_info['query_args']));
+    $replacements = module_invoke_all('views_query_substitutions', $view);
+    $query = str_replace(array_keys($replacements), $replacements, $query);
+    dd($query);
+
 
     timer_start("geocluster");
     dd("started clustering " . count($values) . " items");
