@@ -141,7 +141,7 @@ class Geocluster {
           $other_item_key = current(array_keys($results_by_geohash[$hash]));
           $other_item = $results_by_geohash[$hash][$other_item_key];
           if ($this->shouldCluster($values[$item_key], $values[$other_item_key])) {
-            $this->addCluster($values, $item_key, $other_item_key, $current_hash, $hash, $results_by_geohash, TRUE);
+            $this->addCluster($values, $item_key, $other_item_key, $current_hash, $hash, $results_by_geohash);
             if (!isset($results_by_geohash[$current_hash])) {
               continue 2;
             }
@@ -194,17 +194,16 @@ class Geocluster {
    * @param $row_id the first row to be clustered
    * @param $row_id2 the second row to be clustered
    */
-  protected function addCluster(&$values, $row_id, $row_id2, $hash, $hash2, &$entities_by_geohash, $update_center = FALSE) {
+  protected function addCluster(&$values, $row_id, $row_id2, $hash, $hash2, &$entities_by_geohash) {
     $result1 = &$values[$row_id]; $result2 = &$values[$row_id2];
 
     // Merge cluster data.
     $result1->geocluster_ids .= ',' . $result2->geocluster_ids;
     $result1->geocluster_count += $result2->geocluster_count;
-    if ($update_center) {
-      // Calculate new center from all points.
-      $center = GeoclusterHelper::getCenter(array($result1, $result2));
-      $result1->geocluster_geometry = $center;
-    }
+
+    // Calculate new center from all points.
+    $center = GeoclusterHelper::getCenter(array($result1, $result2), array($result1->geocluster_count, $result2->geocluster_count));
+    $result1->geocluster_geometry = $center;
 
     // Remove other result data that has been merged into the cluster.
     unset($values[$row_id2]);
