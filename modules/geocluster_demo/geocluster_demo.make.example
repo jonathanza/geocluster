@@ -40,7 +40,7 @@ projects[views_geojson][patch][] = http://drupal.org/files/views_geojson_render_
 ; Recent geofield changes require changes http://drupal.org/node/1794848
 projects[views_geojson][patch][] = http://drupal.org/files/views_geojson_geofield_changes.patch
 ; BBox argument handler fixes http://drupal.org/node/1839554#comment-6726986
-projects[views_geojson][patch][] = http://drupal.org/files/1839554_views_geojson_bbox_argument_handler_fixes.patch
+projects[views_geojson][patch][] = http://drupal.org/files/1839554_views_geojson_bbox_argument_handler_fixes_2.patch
 
 projects[geophp][version] = 1
 
