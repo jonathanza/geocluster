@@ -29,69 +29,17 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
    *     SearchApiQueryInterface::execute().
    */
   protected function extractResults(SearchApiQueryInterface $query, Apache_Solr_Response $response) {
-    $field_clusters = "clusters";
-    $field_docs = "docs";
-    $field_center = "locs_center";
-    $field_doc_ids = "sm_doc_ids";
-    $field_count = "is_count";
-    $field_id = "ss_id";
-
-    $index = $query->getIndex();
-    $fields = $this->getFieldNames($index);
-    $field_options = $index->options['fields'];
-
-    // Set up the results array.
-    $results = array();
-    $results['results'] = array();
-    // In some rare cases (e.g., MLT query with nonexistent ID) the response
-    // will be NULL.
-    if (!isset($response->clusters)) { // This is named grouped instead of response
-      $results['result count'] = 0;
-      return $results;
+    if ($this->geocluster) {
+      // Set grouping options, so search api will process single result groups correctly.
+      $options = array(
+        'use_grouping' => TRUE,
+        'fields' => array($this->group_field),
+      );
+      $query->setOption('search_api_grouping', $options);
     }
 
-    $total_count = 0;
-    $clusters = $response->{$field_clusters};
-    $docs = $clusters->{$field_docs};
-
-    // Add each search result to the results array.
-    foreach ($docs as $cluster) {
-
-      if ($cluster->{$field_count}) {
-        $count = $cluster->{$field_count};
-        $latlon = explode(",", $cluster->{$field_center});
-        $doc_ids = $cluster->{$field_doc_ids};
-        $id = $doc_ids[0];
-
-        $total_count += $count;
-        $result = array(
-          'id' => $id,
-          'score' => NULL,
-        );
-
-        // mock entity properties for SearchApiViewsQuery::addResults()
-        // $row['_entity_properties'] += $result['fields'];
-        $result['fields'] = array(
-          // Cluster info.
-          'cluster' => TRUE,
-          'cluster_count' => $count,
-          'cluster_items' => $doc_ids,
-
-          // Fields.
-          'nid' => $id,
-          'field_place:lat' => $latlon[0],
-          'field_place:lon' => $latlon[1],
-        );
-
-        // Use the result's id as the array key. By default, 'id' is mapped to
-        // 'item_id' in SearchApiSolrService::getFieldNames().
-        if ($result['id']) {
-          $results['results'][$result['id']] = $result;
-        }
-      }
-    }
-
-    $results['result count'] = $total_count;
+    // Let search api retrieve the results as usual.
+    $results = parent::extractResults($query, $response);
     return $results;
   }
 
@@ -118,45 +66,20 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
     $this->geocluster = &$geocluster;
 
     $this->cluster_field = $geocluster->getFieldHandler()->field;
-    $this->group_field = 'f_ss_' . $this->cluster_field . ':geohash_geocluster_index_' . $geocluster->getGeohashLength();
+    $this->group_field = $this->cluster_field . ':geocluster_index_' . $geocluster->getGeohashLength();
     $this->geohash_field = 'geohashs_' . $this->cluster_field . ':geohash';
     $this->latlon_field = 'locs_' . $this->cluster_field . ':latlon';
     $this->id_field = 'ss_search_api_id';
 
-    // Geocluster specific params.
-    $geocluster_params = array(
-
-      // Geocluster params.
-      'geocluster.clusterDistance' => $geocluster->getClusterDistance(),
-      'geocluster.zoomLevel' => $geocluster->getZoomLevel(),
-      'geocluster.resolution' => $geocluster->getResolution(),
-      'geocluster.geohashLength' => $geocluster->getGeohashLength(),
-
-      // Geocluster solr params.
-      'geocluster.clusterField' => $this->cluster_field,
-      'geocluster.groupField' => $this->group_field,
-      'geocluster.geohashField' => $this->geohash_field,
-      'geocluster.latlonField' => $this->latlon_field,
-      'geocluster.idField' => $this->id_field,
-    );
-
-    $group_limit = 5;
+    $group_limit = 1;
 
     // Solr params.
     $params = array(
-      'qt'              => array('/geocluster'),
-      'query'           => array(),
-      'fl'              => array('*'),
-      'fq'              => array('index_id:geocluster_index'),
-      'facet.field'     => array($this->group_field),
       'group'           => array('true'),
       'group.limit'     => array($group_limit),
-      'group.field'     => array($this->group_field),
-      'facet'           => array('true'),
-      'facet.prefix'    => array($geocluster->getGeohashLength() . '_'),
+      'group.field'     => array('ss_' . $this->group_field),
     );
-    $call_args['params'] += $params + $geocluster_params;
-    $call_args['query'] = '*:*';
+    $call_args['params'] += $params;
   }
 
   /**
@@ -172,7 +95,37 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
    *   The response object returned by Solr.
    */
   protected function postQuery(array &$results, SearchApiQueryInterface $query, Apache_Solr_Response $response) {
-    $i = 2;
+    // Post-process clustered results.
+    if ($this->geocluster) {
+      geophp_load();
+      $index = $query->getIndex();
+      $fields = $this->getFieldNames($index);
+      $groups = &$response->grouped->{'ss_' . $this->group_field}->groups;
+      foreach ($groups as $key => &$group) {
+        // Clustered results.
+        if ($group->doclist->numFound > 1) {
+          $doc = $group->doclist->docs[0];
+          $id = $doc->{$fields['search_api_item_id']};
+          $result = &$results['results'][$id];
+          // Set geocluster specific result data.
+          $result['clustered'] = TRUE;
+          $result['geocluster_count'] = $group->doclist->numFound;
+          $geohash = array_pop(explode('_', $group->groupValue));
+          // TODO: improve accuracy?
+          $location = geoPHP::load($geohash, 'geohash');
+          $result['geocluster_lat'] = $location->getY();
+          $result['geocluster_lon'] = $location->getX();
+          // $result['geocluster_ids'] = "1,2,3";
+        }
+      }
+    }
+    $i = 1;
   }
 
-}
+  public function getFieldNames(SearchApiIndex $index, $reset = FALSE) {
+    $field_names = parent::getFieldNames($index, $reset);
+    // $field_names[$this->group_field] = array();
+    return $field_names;
+  }
+
+  }

@@ -15,7 +15,7 @@ function geocluster_views_plugins() {
     'title' => t('Geocluster'),
     'help' => t('Configure geocluster settings.'),
     'handler' => 'GeoclusterViewsDisplayExtender',
-    // 'uses options' => TRUE,
+    'uses options' => TRUE,
   );
   return $plugins;
 }

@@ -22,7 +22,7 @@ function geocluster_views_api() {
  * Implements hook_views_post_execute_query().
  */
 function geocluster_views_post_execute_query(&$view) {
-  if ($cluster = _geocluster_get_instance($view)) {
+  if ($cluster = geocluster_get_instance($view)) {
     $cluster->cluster($view);
   };
 }
@@ -65,18 +65,18 @@ function geocluster_preprocess_leaflet_map($variables) {
   );
 }
 
-/*** INTERNAL HELPERS ***/
-
 /**
  * Retrieves the geocluster instance from a given view.
  *
  * @param $view view
  */
-function _geocluster_get_instance(&$view) {
+function geocluster_get_instance(&$view) {
   if (isset($view->display_handler->extender['geocluster'])) {
     return $view->display_handler->extender['geocluster']->get_option('geocluster_instance');
   }
 }
+
+/*** INTERNAL HELPERS ***/
 
 /**
  * Implements hook_leaflet_geojson_bean_view_features_alter().

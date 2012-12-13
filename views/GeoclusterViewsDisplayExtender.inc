@@ -58,6 +58,14 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
             ),
           ),
         );
+        $algorithm_options = $this->get_algorithm_options();
+        $more_form['geocluster_options']['algorithm'] = array(
+          '#type' => 'select',
+          '#title' => t('Clustering algorithm'),
+          '#description' => t('Which geocluster algorithm do you want to use?'),
+          '#options' => $algorithm_options,
+          '#default_value' => $geocluster_options['algorithm'] ? $geocluster_options['algorithm'] : '',
+        );
         $more_form['geocluster_options']['cluster_field'] = array(
           '#type' => 'select',
           '#title' => t('Cluster field'),
@@ -93,6 +101,13 @@ class GeoclusterViewsDisplayExtender extends views_plugin_display_extender {
       }
     }
     return $cluster_field_options;
+  }
+
+  function get_algorithm_options() {
+    // Inspired by geofield.
+    $algorithms = array();
+    //
+    return $algorithms;
   }
 
   function pre_execute() {

@@ -1,6 +1,7 @@
 name = geocluster_solr_demo
 core = 7.x
 package = Features
+php = 5.2.4
 dependencies[] = geocluster
 dependencies[] = geocluster_solr
 dependencies[] = search_api

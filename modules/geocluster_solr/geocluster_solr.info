@@ -6,6 +6,9 @@ core = "7.x"
 
 dependencies[] = geocluster
 dependencies[] = search_api_solr
+dependencies[] = search_api_views
 
 files[] = includes/GeoclusterSearchApiSolrService.inc
+files[] = includes/GeoclusterSearchApiViewsQuery.inc
+files[] = includes/GeoclusterApacheSolrResponseWrapper.inc
 

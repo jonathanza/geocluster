@@ -67,7 +67,7 @@ function geocluster_solr_demo_views_default_views() {
     'format' => 'decimal_degrees',
     'labels' => 1,
   );
-  /* Contextual filter: Custom: Bounding box */
+  /* Contextual filter: Broken/missing handler */
   $handler->display->display_options['arguments']['bbox_argument']['id'] = 'bbox_argument';
   $handler->display->display_options['arguments']['bbox_argument']['table'] = 'search_api_index_geocluster_index';
   $handler->display->display_options['arguments']['bbox_argument']['field'] = 'bbox_argument';
