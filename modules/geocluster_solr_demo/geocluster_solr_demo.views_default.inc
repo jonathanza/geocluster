@@ -11,18 +11,18 @@ function geocluster_solr_demo_views_default_views() {
   $export = array();
 
   $view = new view();
-  $view->name = 'search_api_geocluster';
+  $view->name = 'geocluster_test_solr';
   $view->description = '';
   $view->tag = 'default';
   $view->base_table = 'search_api_index_geocluster_index';
-  $view->human_name = 'search api geocluster';
+  $view->human_name = 'geocluster_test_solr';
   $view->core = 7;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
 
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
-  $handler->display->display_options['title'] = 'search api geocluster';
+  $handler->display->display_options['title'] = 'Geocluster test solr';
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'none';
   $handler->display->display_options['cache']['type'] = 'none';
@@ -31,63 +31,116 @@ function geocluster_solr_demo_views_default_views() {
   $handler->display->display_options['pager']['type'] = 'none';
   $handler->display->display_options['style_plugin'] = 'views_geojson';
   $handler->display->display_options['style_options']['data_source']['value'] = 'latlon';
-  $handler->display->display_options['style_options']['data_source']['latitude'] = 'field_place_lat';
-  $handler->display->display_options['style_options']['data_source']['longitude'] = 'field_place_lon';
+  $handler->display->display_options['style_options']['data_source']['latitude'] = 'geocluster_lat';
+  $handler->display->display_options['style_options']['data_source']['longitude'] = 'geocluster_lon';
   $handler->display->display_options['style_options']['data_source']['geofield'] = 'field_place';
-  $handler->display->display_options['style_options']['data_source']['wkt'] = 'nid';
-  $handler->display->display_options['style_options']['data_source']['name_field'] = 'nid';
+  $handler->display->display_options['style_options']['data_source']['wkt'] = 'title';
+  $handler->display->display_options['style_options']['data_source']['name_field'] = 'title';
   $handler->display->display_options['style_options']['jsonp_prefix'] = '';
   $handler->display->display_options['style_options']['using_views_api_mode'] = 0;
-  /* Field: Indexed Node: Node ID */
-  $handler->display->display_options['fields']['nid']['id'] = 'nid';
-  $handler->display->display_options['fields']['nid']['table'] = 'search_api_index_geocluster_index';
-  $handler->display->display_options['fields']['nid']['field'] = 'nid';
-  /* Field: Indexed Node: Place » Latitude */
-  $handler->display->display_options['fields']['field_place_lat']['id'] = 'field_place_lat';
-  $handler->display->display_options['fields']['field_place_lat']['table'] = 'search_api_index_geocluster_index';
-  $handler->display->display_options['fields']['field_place_lat']['field'] = 'field_place_lat';
-  $handler->display->display_options['fields']['field_place_lat']['precision'] = '0';
-  $handler->display->display_options['fields']['field_place_lat']['link_to_entity'] = 0;
-  /* Field: Indexed Node: Place » Longitude */
-  $handler->display->display_options['fields']['field_place_lon']['id'] = 'field_place_lon';
-  $handler->display->display_options['fields']['field_place_lon']['table'] = 'search_api_index_geocluster_index';
-  $handler->display->display_options['fields']['field_place_lon']['field'] = 'field_place_lon';
-  $handler->display->display_options['fields']['field_place_lon']['precision'] = '0';
-  $handler->display->display_options['fields']['field_place_lon']['link_to_entity'] = 0;
+  /* Field: Indexed Node: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'search_api_index_geocluster_index';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['link_to_entity'] = 0;
+  /* Field: Content: Geocluster ids (Solr) */
+  $handler->display->display_options['fields']['geocluster_ids']['id'] = 'geocluster_ids';
+  $handler->display->display_options['fields']['geocluster_ids']['table'] = 'search_api_index_geocluster_index';
+  $handler->display->display_options['fields']['geocluster_ids']['field'] = 'geocluster_ids';
+  /* Field: Content: Geocluster lat */
+  $handler->display->display_options['fields']['geocluster_lat']['id'] = 'geocluster_lat';
+  $handler->display->display_options['fields']['geocluster_lat']['table'] = 'search_api_index_geocluster_index';
+  $handler->display->display_options['fields']['geocluster_lat']['field'] = 'geocluster_lat';
+  /* Field: Content: Geocluster lon */
+  $handler->display->display_options['fields']['geocluster_lon']['id'] = 'geocluster_lon';
+  $handler->display->display_options['fields']['geocluster_lon']['table'] = 'search_api_index_geocluster_index';
+  $handler->display->display_options['fields']['geocluster_lon']['field'] = 'geocluster_lon';
+  /* Field: Content: Geocluster result count */
+  $handler->display->display_options['fields']['geocluster_count']['id'] = 'geocluster_count';
+  $handler->display->display_options['fields']['geocluster_count']['table'] = 'search_api_index_geocluster_index';
+  $handler->display->display_options['fields']['geocluster_count']['field'] = 'geocluster_count';
   /* Field: Indexed Node: Place */
   $handler->display->display_options['fields']['field_place']['id'] = 'field_place';
   $handler->display->display_options['fields']['field_place']['table'] = 'search_api_index_geocluster_index';
   $handler->display->display_options['fields']['field_place']['field'] = 'field_place';
-  $handler->display->display_options['fields']['field_place']['label'] = '';
-  $handler->display->display_options['fields']['field_place']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_place']['exclude'] = TRUE;
   $handler->display->display_options['fields']['field_place']['click_sort_column'] = 'geom';
-  $handler->display->display_options['fields']['field_place']['type'] = 'geofield_latlon';
   $handler->display->display_options['fields']['field_place']['settings'] = array(
     'data' => 'full',
-    'format' => 'decimal_degrees',
-    'labels' => 1,
   );
-  /* Contextual filter: Broken/missing handler */
-  $handler->display->display_options['arguments']['bbox_argument']['id'] = 'bbox_argument';
-  $handler->display->display_options['arguments']['bbox_argument']['table'] = 'search_api_index_geocluster_index';
-  $handler->display->display_options['arguments']['bbox_argument']['field'] = 'bbox_argument';
-  $handler->display->display_options['arguments']['bbox_argument']['default_action'] = 'default';
-  $handler->display->display_options['arguments']['bbox_argument']['default_argument_type'] = 'querystring';
-  $handler->display->display_options['arguments']['bbox_argument']['summary']['number_of_records'] = '0';
-  $handler->display->display_options['arguments']['bbox_argument']['summary']['format'] = 'default_summary';
-  $handler->display->display_options['arguments']['bbox_argument']['summary_options']['items_per_page'] = '25';
-  $handler->display->display_options['geocluster_enabled'] = 0;
+  $handler->display->display_options['geocluster_enabled'] = 1;
   $handler->display->display_options['geocluster_options']['cluster_field'] = 'field_place';
-  $handler->display->display_options['geocluster_options']['cluster_distance'] = '';
+  $handler->display->display_options['geocluster_options']['cluster_distance'] = '50';
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
+  $handler->display->display_options['path'] = 'geocluster-test-solr';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Solr json';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['name'] = 'main-menu';
+  $handler->display->display_options['menu']['context'] = 0;
+
+  /* Display: Page */
+  $handler = $view->new_display('page', 'Page', 'page_1');
+  $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
+  $handler->display->display_options['defaults']['style_plugin'] = FALSE;
+  $handler->display->display_options['style_plugin'] = 'table';
+  $handler->display->display_options['style_options']['columns'] = array(
+    'title' => 'title',
+    'geocluster_ids' => 'geocluster_ids',
+    'geocluster_lat' => 'geocluster_lat',
+    'geocluster_lon' => 'geocluster_lon',
+    'geocluster_count' => 'geocluster_count',
+    'field_place' => 'field_place',
+  );
+  $handler->display->display_options['style_options']['default'] = '-1';
+  $handler->display->display_options['style_options']['info'] = array(
+    'title' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'geocluster_ids' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'geocluster_lat' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'geocluster_lon' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'geocluster_count' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+    'field_place' => array(
+      'align' => '',
+      'separator' => '',
+      'empty_column' => 0,
+    ),
+  );
+  $handler->display->display_options['defaults']['style_options'] = FALSE;
+  $handler->display->display_options['defaults']['row_plugin'] = FALSE;
+  $handler->display->display_options['defaults']['row_options'] = FALSE;
   $handler->display->display_options['geocluster_enabled'] = 1;
   $handler->display->display_options['geocluster_options']['cluster_field'] = 'field_place';
-  $handler->display->display_options['geocluster_options']['cluster_distance'] = '33';
-  $handler->display->display_options['path'] = 'search-api-geocluster';
-  $export['search_api_geocluster'] = $view;
+  $handler->display->display_options['geocluster_options']['cluster_distance'] = '50';
+  $handler->display->display_options['path'] = 'geocluster-test-solr-table';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Solr table';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['name'] = 'main-menu';
+  $handler->display->display_options['menu']['context'] = 0;
+  $export['geocluster_test_solr'] = $view;
 
   return $export;
 }

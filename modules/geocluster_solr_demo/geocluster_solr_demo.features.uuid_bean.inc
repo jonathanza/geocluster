@@ -1,0 +1,52 @@
+<?php
+/**
+ * @file
+ * geocluster_solr_demo.features.uuid_bean.inc
+ */
+
+/**
+ * Implements hook_uuid_features_default_beans().
+ */
+function geocluster_solr_demo_uuid_features_default_beans() {
+  $beans = array();
+
+  $beans[] = array(
+    'label' => 'Geocluster test solr json map',
+    'description' => NULL,
+    'title' => '',
+    'type' => 'leaflet_geojson_bean',
+    'data' => array(
+      'view_mode' => 'default',
+      'settings' => array(
+        'source' => 'geocluster_test_solr_page',
+        'map' => 'mapbox streets',
+        'height' => '400',
+        'override_map_settings' => 0,
+        'map_settings' => array(
+          'zoom' => '8',
+          'center' => array(
+            'lon' => '14.56667',
+            'lat' => '48.03333',
+          ),
+        ),
+      ),
+    ),
+    'delta' => 'geocluster-test-solr-json-map',
+    'view_mode' => 'default',
+    'uuid' => '82422f96-b1d3-43f8-b536-43e36d9db72c',
+    'settings' => array(
+      'source' => 'geocluster_test_solr_page',
+      'map' => 'mapbox streets',
+      'height' => '400',
+      'override_map_settings' => 0,
+      'map_settings' => array(
+        'zoom' => '8',
+        'center' => array(
+          'lon' => '14.56667',
+          'lat' => '48.03333',
+        ),
+      ),
+    ),
+  );
+  return $beans;
+}
