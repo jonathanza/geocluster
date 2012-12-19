@@ -59,15 +59,15 @@ class Geocluster {
     $this->resolution = $resolutions[$zoom];
     $this->geohash_length = GeohashHelper::lengthFromDistance($this->cluster_distance, $this->resolution);
 
-    // @todo: Remove debug code.
-    $debug =
+    if (module_exists("devel")) {
+      $debug =
         "zoom: " . $this->zoom_level .
-        " , resolution: " . $this->resolution .
-        " , distance: " . $this->cluster_distance .
-        " , geohash_length: " . $this->geohash_length;
-    // print($debug);
-    dd("");
-    dd($debug);
+          " , resolution: " . $this->resolution .
+          " , distance: " . $this->cluster_distance .
+          " , geohash_length: " . $this->geohash_length;
+      dd("");
+      dd($debug);
+    }
   }
 
   /*** MAIN ALGORITHM ***/
@@ -83,23 +83,30 @@ class Geocluster {
     geophp_load();
     $values = &$view->result;
 
-    $query =  Database::getConnection()->prefixTables(vsprintf($view->build_info['query'], $view->build_info['query_args']));
-    $replacements = module_invoke_all('views_query_substitutions', $view);
-    $query = str_replace(array_keys($replacements), $replacements, $query);
-    dd($query);
+    if (module_exists("devel")) {
+      $query =  Database::getConnection()->prefixTables(vsprintf($view->build_info['query'], $view->build_info['query_args']));
+      $replacements = module_invoke_all('views_query_substitutions', $view);
+      $query = str_replace(array_keys($replacements), $replacements, $query);
+      dd($query);
 
-
-    timer_start("geocluster");
-    dd("started clustering " . count($values) . " items");
+      timer_start("geocluster");
+      dd("started clustering " . count($values) . " items");
+    }
 
     $results_by_geohash = $this->preClusterByGeohash($values);
-    dd("pre-created clusters: " . timer_read("geocluster"));
+    if (module_exists("devel")) {
+      dd("pre-created clusters: " . timer_read("geocluster"));
+    }
 
     $this->clusterByNeighborCheck($values, $results_by_geohash);
-    dd("merged & finalized clusters: " . timer_read("geocluster"));
+    if (module_exists("devel")) {
+      dd("merged & finalized clusters: " . timer_read("geocluster"));
+    }
 
     $this->finalizeClusters($values);
-    timer_stop("geocluster");
+    if (module_exists("devel")) {
+      timer_stop("geocluster");
+    }
   }
 
   protected function preClusterByGeohash(&$values) {
@@ -116,7 +123,10 @@ class Geocluster {
         $row => $value,
       );
     }
-    dd("total items: " . $total_count);
+
+    if (module_exists("devel")) {
+      dd("total items: " . $total_count);
+    }
     return $results_by_geohash;
   }
 
