@@ -10,11 +10,7 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
    */
   var $geocluster;
 
-  var $cluster_field;
   var $group_field;
-  var $geohash_field;
-  var $latlon_field;
-  var $id_field;
 
   /**
    * Extract results from a Solr response.
@@ -44,7 +40,7 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
   }
 
   /**
-   * Empty method to allow subclassed to apply custom changes before the query
+   * Apply custom changes before the query
    * is sent to Solr. Works exactly like hook_search_api_solr_query_alter().
    *
    * @param array $call_args
@@ -55,7 +51,8 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
    *   The SearchApiQueryInterface object representing the executed search query.
    */
   protected function preQuery(array &$call_args, SearchApiQueryInterface $query) {
-    // @todo: parametrize & optimize currently hardcoded query params.
+    // Get geocluster from query option, as we can't access the view object.
+    // @see GeoclusterSearchApiViewsQuery::build().
     $geocluster = $query->getOption("geocluster");
     if ($geocluster != NULL) {
       $this->addGeoclusterParams($call_args, $query, $geocluster);
@@ -65,21 +62,17 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
   protected function addGeoclusterParams(array &$call_args, SearchApiQueryInterface $query, Geocluster &$geocluster) {
     $this->geocluster = &$geocluster;
 
-    $this->cluster_field = $geocluster->getFieldHandler()->field;
-    $this->group_field = $this->cluster_field . ':geocluster_index_' . $geocluster->getGeohashLength();
-    $this->geohash_field = 'geohashs_' . $this->cluster_field . ':geohash';
-    $this->latlon_field = 'locs_' . $this->cluster_field . ':latlon';
-    $this->id_field = 'ss_search_api_id';
-
+    $this->group_field = $geocluster->getFieldHandler()->field . ':geocluster_index_' . $geocluster->getGeohashLength();
     $group_limit = 1;
 
     // Solr params.
     $params = array(
-      'group'           => array('true'),
-      'group.limit'     => array($group_limit),
+      'group'           => 'true',
+      'group.limit'     => $group_limit,
       'group.field'     => array('ss_' . $this->group_field),
     );
     $call_args['params'] += $params;
+    //$call_args['limit'] = 10;
   }
 
   /**
@@ -100,10 +93,12 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       geophp_load();
       $index = $query->getIndex();
       $fields = $this->getFieldNames($index);
-      $groups = &$response->grouped->{'ss_' . $this->group_field}->groups;
+      $grouped_field = $fields[$this->group_field];
+      $groups = &$response->grouped->{$grouped_field}->groups;
       foreach ($groups as $key => &$group) {
         // Clustered results.
         if ($group->doclist->numFound > 1) {
+          // @todo: create cluster entity instead of fake result
           $doc = $group->doclist->docs[0];
           $id = $doc->{$fields['search_api_item_id']};
           $result = &$results['results'][$id];
@@ -115,6 +110,8 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
           $location = geoPHP::load($geohash, 'geohash');
           $result['geocluster_lat'] = $location->getY();
           $result['geocluster_lon'] = $location->getX();
+
+          // dd('hash: ' . $geohash . ' -> ' . $location->getY() . '/' . $location->getX());
           // $result['geocluster_ids'] = "1,2,3";
         }
       }

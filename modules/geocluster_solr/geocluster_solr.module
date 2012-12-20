@@ -32,18 +32,3 @@ function geocluster_solr_search_api_service_info() {
   );
   return $services;
 }
-
-function geocluster_search_api_views_pre_execute(&$query, &$view) {
-  /*
-  if ($geocluster = geocluster_get_instance($view)) {
-    $query->setOption("geocluster", $geocluster);
-  }
-  */
-}
-
-
-function geocluster_solr_views_geojson_render_fields_alter(&$feature, $view, $row, $index) {
-  if (isset($row->_entity_properties) && !empty($row->_entity_properties['cluster'])) {
-    // geocluster_add_geojson_cluster_info($feature, $row->_entity_properties['cluster_count']);
-  }
-}
