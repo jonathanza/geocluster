@@ -5,11 +5,13 @@ package = Mapping
 core = "7.x"
 
 dependencies[] = geofield
+dependencies[] = entity
 
 ; Views GeoJSON integration doesn't exist at the moment.
 ;dependencies[] = views_geojson
 
 files[] = geocluster.install
+files[] = geocluster.admin.inc
 files[] = includes/Geocluster.inc
 files[] = includes/GeoclusterHelper.inc
 files[] = includes/GeohashHelper.inc

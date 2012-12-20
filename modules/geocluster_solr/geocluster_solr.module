@@ -32,3 +32,12 @@ function geocluster_solr_search_api_service_info() {
   );
   return $services;
 }
+
+/**
+ * Implements hook_search_api_item_type_info_alter().
+ */
+function geocluster_solr_search_api_item_type_info_alter(array &$infos) {
+  if (isset($infos['geocluster_item'])) {
+    $infos['geocluster_item']['datasource controller'] = 'GeoclusterSearchApiEntityDataSourceController';
+  }
+}

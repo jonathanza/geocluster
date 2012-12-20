@@ -96,27 +96,34 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       $grouped_field = $fields[$this->group_field];
       $groups = &$response->grouped->{$grouped_field}->groups;
       foreach ($groups as $key => &$group) {
-        // Clustered results.
         if ($group->doclist->numFound > 1) {
-          // @todo: create cluster entity instead of fake result
+          // Clustered results.
+          // Set geocluster specific result data.
+          $geohash = array_pop(explode('_', $group->groupValue));
+          $location = geoPHP::load($geohash, 'geohash');
+          $count = $group->doclist->numFound;
+          $center = geofield_get_values_from_geometry($location);
+
+          $entity = entity_create('geocluster_item', array(
+            'field_geocluster_clustered' => TRUE,
+            'field_geocluster_count' => $count,
+            'field_geocluster_center' => $center,
+          ));
+        }
+        else {
+          // Single results.
           $doc = $group->doclist->docs[0];
           $id = $doc->{$fields['search_api_item_id']};
-          $result = &$results['results'][$id];
-          // Set geocluster specific result data.
-          $result['clustered'] = TRUE;
-          $result['geocluster_count'] = $group->doclist->numFound;
-          $geohash = array_pop(explode('_', $group->groupValue));
-          // TODO: improve accuracy?
-          $location = geoPHP::load($geohash, 'geohash');
-          $result['geocluster_lat'] = $location->getY();
-          $result['geocluster_lon'] = $location->getX();
 
-          // dd('hash: ' . $geohash . ' -> ' . $location->getY() . '/' . $location->getX());
-          // $result['geocluster_ids'] = "1,2,3";
+          $real_item = $id;
+          $entity = entity_create('geocluster_item', array(
+            'field_geocluster_clustered' => FALSE,
+            'field_geocluster_real_item' => $real_item,
+          ));
         }
+        $results['results'][$id]['entity'] = $entity;
       }
     }
-    $i = 1;
   }
 
   public function getFieldNames(SearchApiIndex $index, $reset = FALSE) {

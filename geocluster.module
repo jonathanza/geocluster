@@ -1,5 +1,6 @@
 <?php
 
+require_once 'geocluster.entity.inc';
 require_once 'geocluster.geohash.inc';
 
 /**
@@ -13,6 +14,42 @@ require_once 'geocluster.geohash.inc';
 function geocluster_views_api() {
   return array(
     'api' => '3',
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function geocluster_menu() {
+  $items = array();
+  /*
+  if (module_exists('field_ui')) {
+    $items['admin/structure/geocluster'] = array(
+      'title' => 'Geocluster',
+      'description' => 'Administer geocluster item entity.',
+      'page callback' => 'geocluster_admin',
+      'access arguments' => array('administer geocluster item entity'),
+      // 'type' => MENU_NORMAL_ITEM,
+      'file' => 'geocluster.admin.inc',
+    );
+  }
+  */
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function geocluster_permission() {
+  return array(
+    'administer geocluster items' =>  array(
+      'title' => t('Administer geocluster items'),
+      'description' => t('Manage the geocluster item entity.'),
+    ),
+    'administer geocluster item types' =>  array(
+      'title' => t('Administer geocluster item types'),
+      'description' => t('Manage the geocluster item type entity.'),
+    ),
   );
 }
 
