@@ -47,7 +47,8 @@ function geocluster_field_schema_alter(&$schema, $field) {
  */
 function geocluster_field_attach_presave($entity_type, $entity) {
   $field_info = field_info_field_by_ids();
-  foreach (field_info_instances($entity_type, $entity->type) as $name => $field_info_instance) {
+  list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
+  foreach (field_info_instances($entity_type, $bundle) as $name => $field_info_instance) {
     $is_valid_field_instance = isset($field_info_instance['field_id']) && isset($field_info[$field_info_instance['field_id']]['type']);
     if ($is_valid_field_instance
         &&'geofield' === $field_info[$field_info_instance['field_id']]['type']
