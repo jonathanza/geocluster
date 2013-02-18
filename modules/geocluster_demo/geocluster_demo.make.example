@@ -18,10 +18,6 @@ projects[geocluster][version] = 1
 projects[geofield][version] = 2
 
 projects[leaflet][version] = 1
-; Add hook_leaflet_views_alter_points_data http://drupal.org/node/1796422
-projects[leaflet][patch][] = http://drupal.org/files/leaflet_views_alter_points_data.patch
-; GeoJSON API changes http://drupal.org/node/1804992
-projects[leaflet][patch][] = http://drupal.org/files/addgeojson_method_doesnt_exist.patch
 
 libraries[leaflet][download][type] = get
 libraries[leaflet][download][url] = https://github.com/CloudMade/Leaflet/zipball/v0.4.4

@@ -28,21 +28,6 @@ function geocluster_views_post_execute_query(&$view) {
 }
 
 /**
- * Adds geocluster information to a leaflet data item.
- *
- * Implements hook_leaflet_views_alter_points_data().
- */
-function geocluster_leaflet_views_alter_points_data($result, &$points) {
-  if (isset($result->clustered)) {
-    // Add cluster info to every points data entry.
-    array_walk($points, function(&$point, $key, $count) {
-      $point['clustered'] = TRUE;
-      $point['cluster_items'] = $count;
-    }, count($result->ids));
-  }
-}
-
-/**
  * Adds geocluster information to a views_geojson result.
  *
  * Implements hook_views_geojson_render_fields_alter().
