@@ -121,15 +121,20 @@ function geocluster_geohash_property_get_callback($entity, array $options, $name
 }
 
 /**
- * Returns geohash prefixes numbered by length.
+ * Returns geohash prefixes for a given geohash-enabled entity field.
+ *
+ * If $info['geohash length'] is specified, the particular geohash prefix will
+ * be returned. Otherwise, an array of geohash prefixes starting with length 1
+ * up to the total length of the original geohash will be returned.
+ *
+ * example:
+ *   u
+ *   u2
+ *   u2s
+ *   ...
  *
  * see http://stackoverflow.com/questions/11319465/geoclusters-in-solr/11321723#11321723
  *
- * example:
- *   1_u
- *   2_u2
- *   3_u2s
- *   ...
  */
 function geocluster_index_property_get_callback($entity, array $options, $name, $type, $info) {
   $geohash = geocluster_geohash_property_get_callback($entity, $options, $name, $type, $info);
@@ -169,5 +174,5 @@ function _geocluster_get_geohash($geom) {
  * @return string
  */
 function _geocluster_get_geohash_prefix($geohash, $length) {
-  return $length . '_' . substr($geohash, 0, min($length, strlen($geohash)));
+  return substr($geohash, 0, min($length, strlen($geohash)));
 }

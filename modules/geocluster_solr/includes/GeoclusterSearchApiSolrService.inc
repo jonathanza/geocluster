@@ -105,7 +105,7 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
           // Set geocluster specific result data.
           $result['clustered'] = TRUE;
           $result['geocluster_count'] = $group->doclist->numFound;
-          $geohash = array_pop(explode('_', $group->groupValue));
+          $geohash = $group->groupValue;
           // TODO: improve accuracy?
           $location = geoPHP::load($geohash, 'geohash');
           $result['geocluster_lat'] = $location->getY();
