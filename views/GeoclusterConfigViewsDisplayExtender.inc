@@ -69,7 +69,7 @@ class GeoclusterConfigViewsDisplayExtender extends views_plugin_display_extender
    * Returns the view that the configuration is attached to.
    * @return View
    */
-  public function &get_view() {
+  public function get_view() {
     return $this->view;
   }
 
@@ -77,7 +77,7 @@ class GeoclusterConfigViewsDisplayExtender extends views_plugin_display_extender
    * Returns the display of the configuration.
    * @return views_plugin_display
    */
-  public function &get_display() {
+  public function get_display() {
     return $this->display;
   }
 }

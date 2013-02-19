@@ -155,9 +155,11 @@ function geocluster_views_api() {
 /**
  * Invokes clustering pre execution phase before the view is executed.
  *
- * Implements hook_views_post_execute_query().
+ * This actually needs to happen before the view if fully built.
+ *
+ * Implements hook_views_pre_build().
  */
-function geocluster_views_pre_execute(&$view) {
+function geocluster_views_pre_build(&$view) {
   if ($config = geocluster_get_config($view)) {
     if ($config->get_option('geocluster_enabled')) {
       if ($algorithm = geocluster_init_algorithm($config)) {
