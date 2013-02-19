@@ -10,12 +10,15 @@ dependencies[] = geofield
 ;dependencies[] = views_geojson
 
 files[] = geocluster.install
-files[] = includes/Geocluster.inc
+
+files[] = includes/GeoclusterAlgorithm.inc
+files[] = includes/GeoclusterConfig.inc
+files[] = includes/GeoclusterConfigBackendInterface.inc
 files[] = includes/GeoclusterHelper.inc
 files[] = includes/GeohashHelper.inc
 files[] = includes/GeohashUtils.inc
 
-files[] = views/GeoclusterViewsDisplayExtender.inc
+files[] = views/GeoclusterConfigViewsDisplayExtender.inc
 files[] = views/handlers/geocluster_handler_field_default.inc
 files[] = views/handlers/geocluster_handler_field_numeric.inc
 

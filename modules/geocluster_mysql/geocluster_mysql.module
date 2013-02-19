@@ -1,0 +1,17 @@
+<?php
+/**
+ * @file
+ * Code for the geocluster_views_geojson module.
+ */
+
+function geocluster_mysql_geocluster_algorithm_info() {
+  return array(
+    'geocluster_mysql' => array(
+      'handler' => array(
+        'label' => t('MySQL Aggregation based clustering algorithm'),
+        'class' => 'GeoclusterMySQLGeoclusterAlgorithm',
+      ),
+    ),
+  );
+}
+

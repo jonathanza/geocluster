@@ -15,7 +15,7 @@ function geocluster_views_plugins() {
   $plugins['display_extender']['geocluster'] = array(
     'title' => t('Geocluster'),
     'help' => t('Configure geocluster settings.'),
-    'handler' => 'GeoclusterViewsDisplayExtender',
+    'handler' => 'GeoclusterConfigViewsDisplayExtender',
     'uses options' => TRUE,
   );
   return $plugins;
@@ -35,8 +35,8 @@ function geocluster_views_data_alter(&$data) {
       $geocluster_field = 'geocluster';
       $data[$table_name][$geocluster_field . '_ids'] = array(
         'group' => 'Content',
-        'title' => 'Geocluster ids',
-        'help' => 'Geocluster ids',
+        'title' => 'Geocluster ids (' . $field['field_name'] . ')',
+        'help' => 'Adds Geocluster ids from a clustered result',
         'field' => array(
           'table' => $table_name,
           'handler' => 'geocluster_handler_field_default',
@@ -44,8 +44,8 @@ function geocluster_views_data_alter(&$data) {
       );
       $data[$table_name][$geocluster_field . '_count'] = array(
         'group' => 'Content',
-        'title' => 'Geocluster result count',
-        'help' => 'Geocluster result count',
+        'title' => 'Geocluster result count (' . $field['field_name'] . ')',
+        'help' => 'Adds Geocluster result count from a clustered result',
         'field' => array(
           'table' => $table_name,
           'handler' => 'geocluster_handler_field_numeric',
@@ -54,8 +54,8 @@ function geocluster_views_data_alter(&$data) {
       $data[$table_name][$geocluster_field . '_lat'] = array(
         'real field' => $field['field_name'] . '_lat',
         'group' => 'Content',
-        'title' => 'Geocluster lat',
-        'help' => 'Geocluster lat',
+        'title' => 'Geocluster lat (' . $field['field_name'] . ')',
+        'help' => 'Adds Geocluster lat from a clustered result',
         'field' => array(
           'table' => $table_name,
           'handler' => 'geocluster_handler_field_numeric',
@@ -64,8 +64,8 @@ function geocluster_views_data_alter(&$data) {
       $data[$table_name][$geocluster_field . '_lon'] = array(
         'real field' => $field['field_name'] . '_lon',
         'group' => 'Content',
-        'title' => 'Geocluster lon',
-        'help' => 'Geocluster lon',
+        'title' => 'Geocluster lon (' . $field['field_name'] . ')',
+        'help' => 'Adds Geocluster lon from a clustered result',
         'field' => array(
           'table' => $table_name,
           'handler' => 'geocluster_handler_field_numeric',

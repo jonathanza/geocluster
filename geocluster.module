@@ -1,11 +1,146 @@
 <?php
 
-require_once 'geocluster.geohash.inc';
-
 /**
  * @file
  * Geocluster extension for geofield and maps.
  */
+
+require_once 'geocluster.geohash.inc';
+
+define('GEOCLUSTER_ALGORITHM_OPTION', 'geocluster_algorithm');
+
+define('GEOCLUSTER_ALGORITHM_INFO', 'geocluster_algorithm_info');
+
+/**
+ * Implements hook_ctools_plugin_type().
+ */
+function geocluster_ctools_plugin_type() {
+  $plugins['geocluster_algorithm'] = array(
+    'use hooks' => TRUE,
+  );
+  return $plugins;
+}
+
+/**
+ * Provides a list of available or one particular geocluster algorithm info.
+ *
+ * @param null $algorithm (optional) specify a particular algorithm key.
+ * @param bool $skip_cache (optional) bypass caching mechanism.
+ * @return array a list of algorithm info arrays or a single algorithm info array.
+ */
+function geocluster_get_geocluster_algorithm_info($algorithm = NULL, $skip_cache = FALSE) {
+  // Try to load from cache.
+  if (!$skip_cache) {
+    static $drupal_static_fast;
+    if (!isset($drupal_static_fast)) {
+      $drupal_static_fast[GEOCLUSTER_ALGORITHM_INFO] = &drupal_static(__FUNCTION__);
+    }
+    $info = &$drupal_static_fast[GEOCLUSTER_ALGORITHM_INFO];
+    if (empty($info)) {
+      if ($cache = cache_get(GEOCLUSTER_ALGORITHM_INFO)) {
+        $info = $cache->data;
+      }
+    }
+  }
+  // Build algorithm info & cache it.
+  if (empty($info)) {
+    $info = module_invoke_all(GEOCLUSTER_ALGORITHM_INFO);
+    // Let other modules alter the source info.
+    drupal_alter(GEOCLUSTER_ALGORITHM_INFO, $info);
+    cache_set(GEOCLUSTER_ALGORITHM_INFO, $info);
+  }
+  // Return the entire info array, if no algorithm key has been specified.
+  if (empty($algorithm)) {
+    return $info;
+  }
+  // Return a specific info array element for a given algorithm key.
+  elseif (isset($info[$algorithm])) {
+    return $info[$algorithm];
+  }
+}
+
+/**
+ * Initializes a geocluster config with a provided backend.
+ *
+ * @param $config_backend GeoclusterConfigBackendInterface
+ * @return GeoclusterConfig
+ */
+function geocluster_init_config($config_backend) {
+  $config = new GeoclusterConfig($config_backend);
+  return $config;
+}
+
+/**
+ * Initializes the geocluster algorithm.
+ *
+ * @param $config_backend GeoclusterConfigBackendInterface
+ * @return GeoclusterMySQLGeoclusterAlgorithm
+ */
+function geocluster_init_algorithm($config_backend) {
+  $view = $config_backend->get_view();
+  // Get geocluster options.
+  $geocluster_options = $config_backend->get_option('geocluster_options');
+  $cluster_distance = $geocluster_options['cluster_distance'];
+  $field_name = $geocluster_options['cluster_field'];
+  if (empty($view->field[$field_name])) {
+    return;
+  }
+  $cluster_field = $view->field[$field_name];
+
+  // Default zoom.
+  $zoom = 7;
+
+  // Add customizations based on style plugin.
+  // @todo: make this a separate function or hook
+  $style_plugin_name = $config_backend->get_option('style_plugin');
+  switch ($style_plugin_name) {
+    case 'leaflet':
+      $map = $view->style_plugin->options['map'];
+      $info =  leaflet_map_get_info($map);
+      $zoom = $info['settings']['zoom'];
+      break;
+    case 'views_geojson':
+      break;
+    case 'geofield_map':
+      $style_options = $view->display_handler->display->display_options['style_options'];
+      $zoom = $style_options['geofield_map_zoom'];
+  }
+
+  // Allow to override using get paramters.
+  $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
+  $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
+
+  if($algorithm = new GeoclusterMySQLGeoclusterAlgorithm($config_backend, $cluster_distance, $zoom, $cluster_field)) {
+    $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm);
+  }
+  return $algorithm;
+}
+
+
+/**
+ * Retrieves the geocluster config from a given view.
+ *
+ * @param $view view
+ * @return GeoclusterConfig
+ */
+function geocluster_get_config(&$view) {
+  if (isset($view->display_handler->extender['geocluster'])) {
+    return $view->display_handler->extender['geocluster'];
+  }
+}
+
+
+/**
+ * Retrieves the geocluster algorithm from a given view.
+ *
+ * @param $view view
+ * @return GeoclusterAlgorithm
+ */
+function geocluster_get_algorithm(&$view) {
+  if (isset($view->display_handler->extender['geocluster'])) {
+    return $view->display_handler->extender['geocluster']->get_option(GEOCLUSTER_ALGORITHM_OPTION);
+  }
+}
 
 /**
  * Implements hook_views_api().
@@ -16,14 +151,33 @@ function geocluster_views_api() {
   );
 }
 
+
 /**
- * Invokes clustering after the views query has been executed.
+ * Invokes clustering pre execution phase before the view is executed.
+ *
+ * Implements hook_views_post_execute_query().
+ */
+function geocluster_views_pre_execute(&$view) {
+  if ($config = geocluster_get_config($view)) {
+    if ($config->get_option('geocluster_enabled')) {
+      if ($algorithm = geocluster_init_algorithm($config)) {
+        $algorithm->before_pre_execute();
+        $algorithm->pre_execute();
+      }
+    }
+  }
+}
+
+/**
+ * Invokes clustering post execution phase after the views query has been executed.
  *
  * Implements hook_views_post_execute_query().
  */
 function geocluster_views_post_execute_query(&$view) {
-  if ($cluster = geocluster_get_instance($view)) {
-    $cluster->cluster($view);
+  if ($algorithm = geocluster_get_algorithm($view)) {
+    $algorithm->before_post_execute();
+    $algorithm->post_execute();
+    $algorithm->after_post_execute();
   };
 }
 
@@ -51,19 +205,6 @@ function geocluster_preprocess_leaflet_map($variables) {
     array('weight' => 5)
   );
 }
-
-/**
- * Retrieves the geocluster instance from a given view.
- *
- * @param $view view
- */
-function geocluster_get_instance(&$view) {
-  if (isset($view->display_handler->extender['geocluster'])) {
-    return $view->display_handler->extender['geocluster']->get_option('geocluster_instance');
-  }
-}
-
-/*** INTERNAL HELPERS ***/
 
 /**
  * Implements hook_leaflet_geojson_bean_view_features_alter().

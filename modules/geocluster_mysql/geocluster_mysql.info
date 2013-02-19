@@ -1,0 +1,10 @@
+name = Geocluster MySQL
+description = MySQL aggregation-based geocluster implementation.
+package = Mapping
+core = "7.x"
+
+dependencies[] = geocluster
+dependencies[] = views
+dependencies[] = views_geojson
+
+files[] = plugins/geocluster_algorithm/GeoclusterMySQLGeoclusterAlgorithm.inc
