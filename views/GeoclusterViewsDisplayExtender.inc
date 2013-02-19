@@ -1,8 +1,5 @@
 <?php
 
-/**
- * Diameter of the Earth in kilometers.
- */
 define('GEOCLUSTER_DEFAULT_DISTANCE', 12);
 
 define('GEOCLUSTER_VIEWS_SECTION', 'style_options');
