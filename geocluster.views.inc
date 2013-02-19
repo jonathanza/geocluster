@@ -6,8 +6,9 @@
  */
 
 /**
- * Implements hook_views_plugins().
+ * Registers the geocluster display extender.
  *
+ * Implements hook_views_plugins().
  */
 function geocluster_views_plugins() {
   $plugins = array();
@@ -20,6 +21,11 @@ function geocluster_views_plugins() {
   return $plugins;
 }
 
+/**
+ * Adds custom field handlers for clustered data.
+ *
+ * Implements hook_views_data_alter().
+ */
 function geocluster_views_data_alter(&$data) {
   $fields = field_info_fields();
   foreach ($fields as $field) {

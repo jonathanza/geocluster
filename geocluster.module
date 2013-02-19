@@ -43,6 +43,8 @@ function geocluster_views_geojson_render_fields_alter(&$feature, $view, $row, $i
  * Implements theme_preprocess_leaflet_map().
  */
 function geocluster_preprocess_leaflet_map($variables) {
+  // Adds the geocluster leaflet marker javascript.
+  // TODO: make this configurable / move it to the right place :)
   drupal_add_js(
     drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.marker.js',
     // Add our script after leaflet.drupal.js.

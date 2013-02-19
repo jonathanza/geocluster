@@ -18,21 +18,22 @@ define('GEOCLUSTER_GEOHASH_LENGTH', 12);
  */
 function geocluster_field_schema_alter(&$schema, $field) {
   if ($field['type'] == 'geofield') {
-    // Add an addtional column of data.
+    // Adds the geohash column.
     $schema['columns']['geohash'] = array(
       'description' => "Geohash.",
       'type' => 'varchar',
-      'length' => 128,
+      'length' => GEOCLUSTER_GEOHASH_LENGTH,
       'not null' => FALSE,
     );
     // $schema['indexes']['fid_geohash'] = array('fid', 'geohash');
 
-    for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
+    // Adds separate columns for the geohash indices, from length 1 to max.
+    for ($i = 1; $i <= GEOCLUSTER_GEOHASH_LENGTH; $i++) {
       $name = 'geocluster_index_' . $i;
       $schema['columns'][$name] = array(
-        'description' => 'Geocluster index ' . $i,
+        'description' => 'Geocluster index level ' . $i,
         'type' => 'varchar',
-        'length' => 128,  // could be $i + 3.
+        'length' => GEOCLUSTER_GEOHASH_LENGTH,
         'not null' => FALSE,
       );
       // $schema['indexes']['fid_' . $name] = array('fid', $name);
@@ -84,7 +85,7 @@ function geocluster_entity_property_info_alter(&$info) {
 }
 
 /**
- * Helper function that adds geohash property for a geofield.
+ * Helper function that adds geohash properties for a geofield.
  */
 function _geocluster_add_geohash_property(&$value) {
   if (isset($value['properties'])) {
@@ -100,7 +101,7 @@ function _geocluster_add_geohash_property(&$value) {
 
         for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
           $property['property info']['geocluster_index_' . $i] = array(
-            'label' => t('Geocluster index ' . $i),
+            'label' => t('Geocluster index level ' . $i),
             'type' => 'string',
             'description' => t('Returns the location as geohash with length ' . $i),
             'getter callback' => 'geocluster_index_property_get_callback',
