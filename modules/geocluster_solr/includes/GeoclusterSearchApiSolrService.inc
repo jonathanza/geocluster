@@ -38,6 +38,19 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
     $this->group_field = $algorithm->getFieldHandler()->field . ':geocluster_index_' . $algorithm->getGeohashLength();
     $group_limit = 1;
 
+    // Add bbox filter, if present.
+    if (isset($_GET['bbox'])) {
+      $field_name = $this->algorithm->getFieldHandler()->real_field;
+      $index = $query->getIndex();
+      $fields = $this->getFieldNames($index);
+      $field = $fields[$field_name . ':latlon'];
+      $field = SearchApiSolrConnection::escapeFieldName($field);
+      list($left, $bottom, $right, $top) = explode(',', $_GET['bbox']);
+      $fq = &$call_args['params']['fq'];
+      $query = $field . ':[' . $bottom . ',' . $left . ' TO ' . $top . ',' . $right . ']';
+      $fq[] = $query;
+    }
+
     // Solr params.
     $params = array(
       'group'           => 'true',

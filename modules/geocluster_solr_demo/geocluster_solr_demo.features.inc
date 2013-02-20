@@ -28,7 +28,7 @@ function geocluster_solr_demo_default_search_api_index() {
       "fields" : {
         "status" : { "type" : "boolean" },
         "search_api_language" : { "type" : "string" },
-        "field_place:latlon" : { "type" : "text" },
+        "field_place:latlon" : { "type" : "string", "real_type" : "location" },
         "field_place:geohash" : { "type" : "string", "real_type" : "geohash" },
         "field_place:geocluster_index_12" : { "type" : "string" },
         "field_place:geocluster_index_11" : { "type" : "string" },

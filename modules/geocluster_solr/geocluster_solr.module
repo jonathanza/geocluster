@@ -29,8 +29,10 @@ function geocluster_solr_geocluster_algorithm() {
 function geocluster_solr_search_api_data_type_info() {
   return array(
     'geohash' => array(
-      'name' => t('geohash'),
-      'fallback' => 'string',
+      'name' => t('Geohash'),
+    ),
+    'location' => array(
+      'name' => t('Location'),
     ),
   );
 }
