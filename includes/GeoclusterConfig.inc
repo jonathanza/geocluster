@@ -21,6 +21,7 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
     $options['geocluster_enabled']['default'] = FALSE;
     $options['geocluster_options'] = array(
       'contains' => array(
+        'algorithm' => array('default' => 'geocluster_mysql'),
         'cluster_field' => array('default' => ''),
         'cluster_distance' => array('default' => GEOCLUSTER_DEFAULT_DISTANCE),
       ),
