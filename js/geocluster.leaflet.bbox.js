@@ -5,7 +5,11 @@
 
     pointToLayer: function(featureData, latlng) {
       if (featureData.cluster_items > 1) {
-        var icon = new L.NumberedDivIcon({number: featureData.cluster_items || 1});
+        var number = featureData.cluster_items;
+        if (number >= 1000) {
+          number = number.toString().substring(0, number.toString().length -3) + 'k';
+        }
+        var icon = new L.NumberedDivIcon({number: number});
         lMarker = new L.Marker(latlng, {icon:icon});
       }
       else {
