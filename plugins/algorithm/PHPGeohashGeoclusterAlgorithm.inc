@@ -30,12 +30,14 @@ class PHPGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
       $cluster_id = NULL;
       // Add all points within the current geohash to a cluster.
       foreach ($entities as $key => &$entity) {
+        // Prepare data.
+        $value = &$this->values[$key];
+        $value->geocluster_ids = $value->{$this->field_handler->field_alias};
+        $value->geocluster_count = 1;
+        $value->geocluster_lon = $value->geocluster_geometry->getX();
+        $value->geocluster_lat = $value->geocluster_geometry->getY();
+        // Either create a new cluster, or
         if (!isset($cluster_id)) {
-          $value = &$this->values[$key];
-          $value->geocluster_ids = $value->{$this->field_handler->field_alias};
-          $value->geocluster_count = 1;
-          $value->geocluster_lon = $value->geocluster_geometry->getX();
-          $value->geocluster_lat = $value->geocluster_geometry->getY();
           // $entity->geocluster_geometry = $center;
           $this->initCluster($value);
           $cluster_id = $key;
