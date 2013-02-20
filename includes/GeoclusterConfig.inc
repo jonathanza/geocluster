@@ -1,6 +1,6 @@
 <?php
 
-define('GEOCLUSTER_DEFAULT_DISTANCE', 30);
+define('GEOCLUSTER_DEFAULT_DISTANCE', 65);
 define('GEOCLUSTER_DEFAULT_ALGORITHM', 'geocluster_mysql');
 
 
