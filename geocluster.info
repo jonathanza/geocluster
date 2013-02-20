@@ -4,17 +4,19 @@ description = Server-side geo clustering for mapping/geofield.
 package = Mapping
 core = "7.x"
 
-dependencies[] = geofield
+dependencies[] = geofieldd
+dependencies[] = views
+dependencies[] = ctools
 
 ;dependencies[] = views_geojson
 
 files[] = geocluster.install
 
 ; Geocluster algorithm
-files[] = plugins/geocluster_algorithm/GeoclusterAlgorithm.inc
-files[] = plugins/geocluster_algorithm/GeohashGeoclusterAlgorithm.inc
-files[] = plugins/geocluster_algorithm/PHPGeohashGeoclusterAlgorithm.inc
-files[] = plugins/geocluster_algorithm/MySQLGeohashGeoclusterAlgorithm.inc
+files[] = plugins/algorithm/GeoclusterAlgorithm.inc
+files[] = plugins/algorithm/GeohashGeoclusterAlgorithm.inc
+files[] = plugins/algorithm/PHPGeohashGeoclusterAlgorithm.inc
+files[] = plugins/algorithm/MySQLGeohashGeoclusterAlgorithm.inc
 
 ; Geocluster config + views integration
 files[] = includes/GeoclusterConfig.inc

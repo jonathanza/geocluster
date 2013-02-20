@@ -105,7 +105,7 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
    * @return array
    */
   protected function get_algorithm_options() {
-    $algorithms = geocluster_get_geocluster_algorithm_info(NULL, TRUE);
+    $algorithms = ctools_get_plugins('geocluster', 'algorithm');
     $options = array();
     foreach ($algorithms as $id => $algorithm) {
       $options[$id] = $algorithm['handler']['label'];

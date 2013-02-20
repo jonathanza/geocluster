@@ -15,48 +15,10 @@ define('GEOCLUSTER_ALGORITHM_INFO', 'geocluster_algorithm_info');
  * Implements hook_ctools_plugin_type().
  */
 function geocluster_ctools_plugin_type() {
-  $plugins['geocluster_algorithm'] = array(
+  $plugins['algorithm'] = array(
     'use hooks' => TRUE,
   );
   return $plugins;
-}
-
-/**
- * Provides a list of available or one particular geocluster algorithm info.
- *
- * @param null $algorithm (optional) specify a particular algorithm key.
- * @param bool $skip_cache (optional) bypass caching mechanism.
- * @return array a list of algorithm info arrays or a single algorithm info array.
- */
-function geocluster_get_geocluster_algorithm_info($algorithm = NULL, $skip_cache = FALSE) {
-  // Try to load from cache.
-  if (!$skip_cache) {
-    static $drupal_static_fast;
-    if (!isset($drupal_static_fast)) {
-      $drupal_static_fast[GEOCLUSTER_ALGORITHM_INFO] = &drupal_static(__FUNCTION__);
-    }
-    $info = &$drupal_static_fast[GEOCLUSTER_ALGORITHM_INFO];
-    if (empty($info)) {
-      if ($cache = cache_get(GEOCLUSTER_ALGORITHM_INFO)) {
-        $info = $cache->data;
-      }
-    }
-  }
-  // Build algorithm info & cache it.
-  if (empty($info)) {
-    $info = module_invoke_all(GEOCLUSTER_ALGORITHM_INFO);
-    // Let other modules alter the source info.
-    drupal_alter(GEOCLUSTER_ALGORITHM_INFO, $info);
-    cache_set(GEOCLUSTER_ALGORITHM_INFO, $info);
-  }
-  // Return the entire info array, if no algorithm key has been specified.
-  if (empty($algorithm)) {
-    return $info;
-  }
-  // Return a specific info array element for a given algorithm key.
-  elseif (isset($info[$algorithm])) {
-    return $info[$algorithm];
-  }
 }
 
 /**
@@ -110,9 +72,22 @@ function geocluster_init_algorithm($config_backend) {
   $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
   $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
 
-  if($algorithm = new MySQLGeohashGeoclusterAlgorithm($config_backend, $cluster_distance, $zoom, $cluster_field)) {
-    $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm);
+  // Dynamically instantiate selected algorithm.
+  $algorithm = $geocluster_options['algorithm'];
+
+  if (FALSE) {
+    if($algorithm = new MySQLGeohashGeoclusterAlgorithm($config_backend, $cluster_distance, $zoom, $cluster_field)) {
+      $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm);
+    }
   }
+  else {
+    if ($class = ctools_plugin_load_class('geocluster', 'algorithm', $algorithm, 'handler')) {
+      if($algorithm = new $class($config_backend, $cluster_distance, $zoom, $cluster_field)) {
+        $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm);
+      }
+    }
+  }
+
   return $algorithm;
 }
 
@@ -143,9 +118,9 @@ function geocluster_get_algorithm(&$view) {
 }
 
 /**
- * Implements hook_geocluster_algorithm_info().
+ * Implements hook_geocluster_algorithm().
  */
-function geocluster_geocluster_algorithm_info() {
+function geocluster_geocluster_algorithm() {
   return array(
     'geocluster_mysql' => array(
       'handler' => array(
