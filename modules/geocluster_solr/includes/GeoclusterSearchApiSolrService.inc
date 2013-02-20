@@ -72,6 +72,7 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       $fields = $this->getFieldNames($index);
       $grouped_field = $fields[$this->group_field];
       $groups = &$response->grouped->{$grouped_field}->groups;
+      dd(timer_read("geocluster") . "ms: items from database: " . count($groups));
       foreach ($groups as $key => &$group) {
 
         // Clustered results.
@@ -97,12 +98,13 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
         );
       }
 
-      dd(timer_read("geocluster") . "ms: pre-clustered by geohash");
+      dd(timer_read("geocluster") . "ms: pre-clustered by geohash: " . count($groups));
+
 
       $this->algorithm->setValues(&$results['results']);
       $this->algorithm->clusterByNeighborCheck($results_by_geohash);
 
-      dd(timer_read("geocluster") . "ms: merged & finalized clusters");
+      dd(timer_read("geocluster") . "ms: merged & finalized clusters: " . count($results['results']));
       dd("total items: " . $total_items);
       timer_stop("geocluster");
 

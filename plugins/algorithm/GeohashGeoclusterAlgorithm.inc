@@ -15,10 +15,12 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
    * Perform clustering on the aggregated views result set.
    */
   function post_execute() {
+    dd(timer_read("geocluster") . "ms: items from database: " . count($this->values));
+
     geophp_load();
     $results_by_geohash = $this->preClusterByGeohash();
     if (module_exists("devel")) {
-      dd(timer_read("geocluster") . "ms: pre-clustered by geohash");
+      dd(timer_read("geocluster") . "ms: pre-clustered by geohash: " . count($this->values));
     }
 
     $this->clusterByNeighborCheck($results_by_geohash);

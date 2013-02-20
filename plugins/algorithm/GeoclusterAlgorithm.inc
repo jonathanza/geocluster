@@ -122,8 +122,8 @@ abstract class GeoclusterAlgorithm {
 
   function after_post_execute() {
     if (module_exists("devel")) {
-      dd(timer_read("geocluster") . "ms: merged & finalized clusters");
-      dd("total items: " . $this->total_items);
+      dd(timer_read("geocluster") . "ms: merged & finalized clusters: " . count($this->values));
+      dd(timer_read("geocluster") . "ms: total items within clusters: " . $this->total_items);
       timer_stop("geocluster");
     }
   }
@@ -165,8 +165,8 @@ abstract class GeoclusterAlgorithm {
     return $this->geohash_length;
   }
 
-  public function setValues($values) {
-    $this->values = $values;
+  public function setValues(&$values) {
+    $this->values = &$values;
   }
 
   public function getValues() {
