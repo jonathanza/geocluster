@@ -41,9 +41,7 @@ class MySQLGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
       );
     }
 
-    if (module_exists("devel")) {
-      dd("total items: " . $total_count);
-    }
+    $this->total_items = $total_count;
     return $results_by_geohash;
   }
 

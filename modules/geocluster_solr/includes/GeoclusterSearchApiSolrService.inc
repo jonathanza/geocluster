@@ -61,25 +61,30 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
    *   The response object returned by Solr.
    */
   protected function postQuery(array &$results, SearchApiQueryInterface $query, Apache_Solr_Response $response) {
+    dd(timer_read("geocluster") . "ms: started clustering");
+
     // Post-process clustered results.
     if ($this->algorithm) {
       geophp_load();
+      $total_items = 0;
       $results_by_geohash = array();
       $index = $query->getIndex();
       $fields = $this->getFieldNames($index);
       $grouped_field = $fields[$this->group_field];
       $groups = &$response->grouped->{$grouped_field}->groups;
       foreach ($groups as $key => &$group) {
-        // Clustered results.
 
+        // Clustered results.
         // @todo: create cluster entity instead of fake result
         $doc = $group->doclist->docs[0];
         $id = $doc->{$fields['search_api_item_id']};
         $result = &$results['results'][$id];
+
         // Set geocluster specific result data.
         $result['clustered'] = $group->doclist->numFound > 1;
         $result['geocluster_ids'] = $id;
         $result['geocluster_count'] = $group->doclist->numFound;
+        $total_items += $group->doclist->numFound;
         $geohash = $group->groupValue;
         // TODO: improve accuracy?
         $location = geoPHP::load($geohash, 'geohash');
@@ -87,16 +92,20 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
         $result['geocluster_lat'] = $location->getY();
         $result['geocluster_lon'] = $location->getX();
 
-        // dd('hash: ' . $geohash . ' -> ' . $location->getY() . '/' . $location->getX());
-        // $result['geocluster_ids'] = "1,2,3";
-
         $results_by_geohash[$geohash] = array(
           $id => &$result,
         );
       }
 
+      dd(timer_read("geocluster") . "ms: pre-clustered by geohash");
+
       $this->algorithm->setValues(&$results['results']);
       $this->algorithm->clusterByNeighborCheck($results_by_geohash);
+
+      dd(timer_read("geocluster") . "ms: merged & finalized clusters");
+      dd("total items: " . $total_items);
+      timer_stop("geocluster");
+
     }
     $i = 1;
   }

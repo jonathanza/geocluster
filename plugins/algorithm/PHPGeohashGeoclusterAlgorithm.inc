@@ -19,6 +19,7 @@ class PHPGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
    * Create clusters from geohash grid.
    */
   protected function preClusterByGeohash() {
+    $this->total_items = count($this->values);
     // Prepare input data & parameters.
     $entities_by_type = $this->entities_by_type();
 

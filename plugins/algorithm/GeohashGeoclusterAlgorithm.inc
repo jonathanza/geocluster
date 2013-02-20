@@ -18,18 +18,12 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
     geophp_load();
     $results_by_geohash = $this->preClusterByGeohash();
     if (module_exists("devel")) {
-      dd("pre-created clusters: " . timer_read("geocluster"));
+      dd(timer_read("geocluster") . "ms: pre-clustered by geohash");
     }
 
     $this->clusterByNeighborCheck($results_by_geohash);
-    if (module_exists("devel")) {
-      dd("merged & finalized clusters: " . timer_read("geocluster"));
-    }
 
     $this->finalizeClusters();
-    if (module_exists("devel")) {
-      timer_stop("geocluster");
-    }
   }
 
   /**

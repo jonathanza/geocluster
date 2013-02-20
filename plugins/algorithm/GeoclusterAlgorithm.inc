@@ -55,6 +55,11 @@ abstract class GeoclusterAlgorithm {
   var $values;
 
   /**
+   * Total number of items within clusters.
+   */
+  protected $total_items;
+
+  /**
    * Constructor.
    *
    * @param $config
@@ -88,21 +93,18 @@ abstract class GeoclusterAlgorithm {
 
   function after_construct() {
     if (module_exists("devel")) {
+      timer_start("geocluster");
       $debug =
         "zoom: " . $this->zoom_level .
           " , resolution: " . $this->resolution .
           " , distance: " . $this->cluster_distance .
           " , geohash_length: " . $this->geohash_length;
       dd("");
-      dd($debug);
+      dd(timer_read("geocluster") . "ms: setup: " . $debug);
     }
   }
 
   function before_pre_execute() {
-    if (module_exists("devel")) {
-      timer_start("geocluster");
-      dd("before pre execute");
-    }
   }
 
   function before_post_execute() {
@@ -113,14 +115,15 @@ abstract class GeoclusterAlgorithm {
       $query =  Database::getConnection()->prefixTables(vsprintf($view->build_info['query'], $view->build_info['query_args']));
       $replacements = module_invoke_all('views_query_substitutions', $view);
       $query = str_replace(array_keys($replacements), $replacements, $query);
-      dd($query);
-      dd("started clustering " . count($this->values) . " items");
+      // dd($query);
+      dd(timer_read("geocluster") . "ms: started clustering");
     }
   }
 
   function after_post_execute() {
     if (module_exists("devel")) {
-      dd("merged & finalized clusters: " . timer_read("geocluster"));
+      dd(timer_read("geocluster") . "ms: merged & finalized clusters");
+      dd("total items: " . $this->total_items);
       timer_stop("geocluster");
     }
   }
