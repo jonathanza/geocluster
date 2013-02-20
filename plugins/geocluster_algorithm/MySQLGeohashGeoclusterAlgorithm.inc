@@ -3,7 +3,7 @@
 /**
  * MySQL aggregation based clustering for geocluster.
  */
-class MySQLGeoclusterAlgorithm extends BaseGeoclusterAlgorithm {
+class MySQLGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
 
   function __construct($config, $cluster_distance, $zoom, $field_handler) {
     parent::__construct($config, $cluster_distance, $zoom, $field_handler);

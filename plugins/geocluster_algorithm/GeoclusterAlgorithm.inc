@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Geocluster extension for geofield and maps.
+ * Abstract definition of a Geocluster algorithm.
  */
 
 abstract class GeoclusterAlgorithm {

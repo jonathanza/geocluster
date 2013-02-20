@@ -110,7 +110,7 @@ function geocluster_init_algorithm($config_backend) {
   $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
   $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
 
-  if($algorithm = new MySQLGeoclusterAlgorithm($config_backend, $cluster_distance, $zoom, $cluster_field)) {
+  if($algorithm = new MySQLGeohashGeoclusterAlgorithm($config_backend, $cluster_distance, $zoom, $cluster_field)) {
     $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm);
   }
   return $algorithm;
@@ -150,13 +150,13 @@ function geocluster_geocluster_algorithm_info() {
     'geocluster_mysql' => array(
       'handler' => array(
         'label' => t('MySQL Aggregation based clustering algorithm'),
-        'class' => 'MySQLGeoclusterAlgorithm',
+        'class' => 'MySQLGeohashGeoclusterAlgorithm',
       ),
     ),
     'geocluster_php' => array(
       'handler' => array(
         'label' => t('PHP based clustering algorithm'),
-        'class' => 'PHPGeoclusterAlgorithm',
+        'class' => 'PHPGeohashGeoclusterAlgorithm',
       ),
     ),
   );

@@ -3,7 +3,7 @@
 /**
  * PHP based clustering for geocluster.
  */
-class PHPGeoclusterAlgorithm extends BaseGeoclusterAlgorithm {
+class PHPGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
 
   function __construct($config, $cluster_distance, $zoom, $field_handler) {
     parent::__construct($config, $cluster_distance, $zoom, $field_handler);

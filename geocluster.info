@@ -12,9 +12,9 @@ files[] = geocluster.install
 
 ; Geocluster algorithm
 files[] = plugins/geocluster_algorithm/GeoclusterAlgorithm.inc
-files[] = plugins/geocluster_algorithm/BaseGeoclusterAlgorithm.inc
-files[] = plugins/geocluster_algorithm/PHPGeoclusterAlgorithm.inc
-files[] = plugins/geocluster_algorithm/MySQLGeoclusterAlgorithm.inc
+files[] = plugins/geocluster_algorithm/GeohashGeoclusterAlgorithm.inc
+files[] = plugins/geocluster_algorithm/PHPGeohashGeoclusterAlgorithm.inc
+files[] = plugins/geocluster_algorithm/MySQLGeohashGeoclusterAlgorithm.inc
 
 ; Geocluster config + views integration
 files[] = includes/GeoclusterConfig.inc

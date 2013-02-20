@@ -5,7 +5,7 @@
  * Geocluster extension for geofield and maps.
  */
 
-abstract class BaseGeoclusterAlgorithm extends GeoclusterAlgorithm {
+abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
 
   function __construct($config, $cluster_distance, $zoom, $field_handler) {
     parent::__construct($config, $cluster_distance, $zoom, $field_handler);
