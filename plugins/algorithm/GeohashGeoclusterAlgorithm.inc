@@ -121,6 +121,8 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
     // Calculate new center from all points.
     $center = GeoclusterHelper::getCenter(array($result1, $result2), array($result1->geocluster_count, $result2->geocluster_count));
     $result1->geocluster_geometry = $center;
+    $result1->geocluster_lat = $center->getY();
+    $result1->geocluster_lon = $center->getX();
 
     // Remove other result data that has been merged into the cluster.
     unset($this->values[$row_id2]);
