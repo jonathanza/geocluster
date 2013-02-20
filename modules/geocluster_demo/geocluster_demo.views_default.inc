@@ -86,7 +86,7 @@ function geocluster_demo_views_default_views() {
   $handler->display->display_options['geocluster_options'] = array(
     'algorithm' => 'geocluster_php',
     'cluster_field' => 'field_place',
-    'cluster_distance' => '60',
+    'cluster_distance' => '65',
   );
 
   /* Display: MySQL GeoJSON */
@@ -110,7 +110,7 @@ function geocluster_demo_views_default_views() {
   $handler->display->display_options['geocluster_options'] = array(
     'algorithm' => 'geocluster_mysql',
     'cluster_field' => 'field_place',
-    'cluster_distance' => '60',
+    'cluster_distance' => '65',
   );
   $handler->display->display_options['path'] = 'mysql-geojson';
   $handler->display->display_options['menu']['type'] = 'normal';
@@ -176,7 +176,7 @@ function geocluster_demo_views_default_views() {
   $handler->display->display_options['geocluster_options'] = array(
     'algorithm' => 'geocluster_mysql',
     'cluster_field' => 'field_place',
-    'cluster_distance' => '60',
+    'cluster_distance' => '65',
   );
   $handler->display->display_options['path'] = 'mysql-table';
   $handler->display->display_options['menu']['type'] = 'normal';
@@ -261,7 +261,7 @@ function geocluster_demo_views_default_views() {
   $handler->display->display_options['geocluster_options'] = array(
     'algorithm' => 'geocluster_php',
     'cluster_field' => 'field_place',
-    'cluster_distance' => '60',
+    'cluster_distance' => '65',
   );
 
   /* Display: PHP GeoJSON */
@@ -270,7 +270,7 @@ function geocluster_demo_views_default_views() {
   $handler->display->display_options['geocluster_enabled'] = 1;
   $handler->display->display_options['geocluster_options'] = array(
     'cluster_field' => 'field_place',
-    'cluster_distance' => '6',
+    'cluster_distance' => '65',
   );
   $handler->display->display_options['path'] = 'php-geojson';
   $handler->display->display_options['menu']['type'] = 'normal';
@@ -336,7 +336,7 @@ function geocluster_demo_views_default_views() {
   $handler->display->display_options['geocluster_options'] = array(
     'algorithm' => 'geocluster_php',
     'cluster_field' => 'field_place',
-    'cluster_distance' => '60',
+    'cluster_distance' => '65',
   );
   $handler->display->display_options['path'] = 'php-table';
   $handler->display->display_options['menu']['type'] = 'normal';

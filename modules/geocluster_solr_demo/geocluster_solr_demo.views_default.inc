@@ -24,6 +24,7 @@ function geocluster_solr_demo_views_default_views() {
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['title'] = 'Geocluster test solr';
   $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['group_by'] = TRUE;
   $handler->display->display_options['access']['type'] = 'none';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
@@ -72,7 +73,7 @@ function geocluster_solr_demo_views_default_views() {
   $handler->display->display_options['geocluster_options'] = array(
     'algorithm' => 'geocluster_solr',
     'cluster_field' => 'field_place',
-    'cluster_distance' => '30',
+    'cluster_distance' => '65',
   );
 
   /* Display: Solr JSON */
@@ -136,8 +137,9 @@ function geocluster_solr_demo_views_default_views() {
   $handler->display->display_options['defaults']['row_options'] = FALSE;
   $handler->display->display_options['geocluster_enabled'] = 1;
   $handler->display->display_options['geocluster_options'] = array(
+    'algorithm' => 'geocluster_solr',
     'cluster_field' => 'field_place',
-    'cluster_distance' => '50',
+    'cluster_distance' => '65',
   );
   $handler->display->display_options['path'] = 'solr-table';
   $handler->display->display_options['menu']['type'] = 'normal';
