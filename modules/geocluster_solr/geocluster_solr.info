@@ -1,5 +1,5 @@
 name = Geocluster Solr
-description =
+description = Search API Solr integration for the Geocluster module.
 
 package = Mapping
 core = "7.x"

@@ -1,6 +1,7 @@
-name = geocluster_demo
+name = Geocluster Demo
+description = A complete demo setup to show case the Geocluster module.
 core = 7.x
-package = Features
+package = Mapping
 php = 5.2.4
 dependencies[] = bean
 dependencies[] = bean_uuid

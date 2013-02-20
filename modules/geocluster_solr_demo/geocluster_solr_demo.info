@@ -1,6 +1,7 @@
-name = geocluster_solr_demo
+name = Geocluster Solr Demo
+description = Demo setup for the Geocluster Solr integration.
 core = 7.x
-package = Features
+package = Mapping
 php = 5.2.4
 dependencies[] = bean_uuid
 dependencies[] = geocluster

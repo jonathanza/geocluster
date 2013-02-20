@@ -1,5 +1,5 @@
 name = Geocluster Test
-description =
+description = JavaScript-based test environment for Gecluster.
 
 package = Mapping
 core = "7.x"
