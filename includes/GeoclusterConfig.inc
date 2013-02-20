@@ -89,10 +89,15 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
     if ($geocluster_options['algorithm'] == 'geocluster_mysql') {
       if (!$this->get_option('group_by')) {
         $this->set_option('group_by', TRUE);
-        drupal_set_message(t('The "use aggregation" setting has been enabled as it is required by the MySQL-based geocluster algorithm.'));
+        drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>enabled</em> as a requirement by the MySQL-based geocluster algorithm.'));
       }
     }
-
+    else if ($geocluster_options['algorithm'] == 'geocluster_php') {
+      if ($this->get_option('group_by')) {
+        $this->set_option('group_by', FALSE);
+        drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>disabled</em> as a requirement by the PHP-based geocluster algorithm.'));
+      }
+    }
   }
 
   function get_cluster_field_options() {
