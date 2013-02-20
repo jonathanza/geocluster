@@ -26,14 +26,20 @@ class GeoclusterConfigViewsDisplayExtender extends views_plugin_display_extender
 
   function options_form(&$form, &$form_state) {
     if ($form_state['section'] == GEOCLUSTER_VIEWS_SECTION && isset($form[GEOCLUSTER_VIEWS_SECTION])) {
-      parent::options_form($form, $form_state);
       $this->config->options_form($form, $form_state);
     }
   }
 
   function options_submit($form, &$form_state) {
-    parent::options_form($form, $form_state);
-    $this->config->options_submit($form, $form_state);
+    if ($form_state['section'] == GEOCLUSTER_VIEWS_SECTION) {
+      $this->config->options_submit($form, $form_state);
+    }
+  }
+
+  function options_validate(&$form, &$form_state) {
+    if ($form_state['section'] == GEOCLUSTER_VIEWS_SECTION && isset($form[GEOCLUSTER_VIEWS_SECTION])) {
+      $this->config->options_validate($form, $form_state);
+    }
   }
 
   /** HELPERS */

@@ -1,6 +1,8 @@
 <?php
 
-define('GEOCLUSTER_DEFAULT_DISTANCE', 12);
+define('GEOCLUSTER_DEFAULT_DISTANCE', 30);
+define('GEOCLUSTER_DEFAULT_ALGORITHM', 'geocluster_mysql');
+
 
 /**
  * Encapsulates the geocluster config.
@@ -19,13 +21,7 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
   function options_definition() {
     $options = array();
     $options['geocluster_enabled']['default'] = FALSE;
-    $options['geocluster_options'] = array(
-      'contains' => array(
-        'algorithm' => array('default' => 'geocluster_mysql'),
-        'cluster_field' => array('default' => ''),
-        'cluster_distance' => array('default' => GEOCLUSTER_DEFAULT_DISTANCE),
-      ),
-    );
+    $options['geocluster_options'] = array();
     return $options;
   }
 
@@ -63,7 +59,7 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
         '#title' => t('Clustering algorithm'),
         '#description' => t('Select a geocluster algorithm to be used.'),
         '#options' => $algorithm_options,
-        '#default_value' => $geocluster_options['algorithm'] ? $geocluster_options['algorithm'] : '',
+        '#default_value' => $geocluster_options['algorithm'] ? $geocluster_options['algorithm'] : GEOCLUSTER_DEFAULT_ALGORITHM,
       );
       $more_form['geocluster_options']['cluster_field'] = array(
         '#type' => 'select',
@@ -75,16 +71,28 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
       $more_form['geocluster_options']['cluster_distance'] = array(
         '#type' => 'textfield',
         '#title' => t('Cluster distance'),
-        '#default_value' => $geocluster_options['cluster_distance'],
+        '#default_value' => $geocluster_options['cluster_distance'] ? $geocluster_options['cluster_distance'] : GEOCLUSTER_DEFAULT_DISTANCE,
         '#description' => t('Specify the cluster distance.'),
       );
     }
     $form = $more_form + $form;
   }
 
+  function options_validate(&$form, &$form_state) {
+  }
+
   function options_submit(&$form, &$form_state) {
     $this->set_option('geocluster_enabled', $form_state['values']['geocluster_enabled']);
     $this->set_option('geocluster_options', $form_state['values']['geocluster_options']);
+
+    $geocluster_options = $form_state['values']['geocluster_options'];
+    if ($geocluster_options['algorithm'] == 'geocluster_mysql') {
+      if (!$this->get_option('group_by')) {
+        $this->set_option('group_by', TRUE);
+        drupal_set_message(t('The "use aggregation" setting has been enabled as it is required by the MySQL-based geocluster algorithm.'));
+      }
+    }
+
   }
 
   function get_cluster_field_options() {
