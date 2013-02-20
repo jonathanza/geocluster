@@ -8,20 +8,6 @@ include_once 'geocluster_demo.features.inc';
 
 function geocluster_demo_install() {
   variable_set('site_frontpage', 'block/geocluster-test-mysql-json-map');
-
-  // Create menu items.
-  $item = array(
-    'link_title' => st('MySQL Map'),
-    'link_path' => 'block/geocluster-test-mysql-json-map',
-    'menu_name' => 'main-menu',
-  );
-  $item = array(
-    'link_title' => st('PHP Map'),
-    'link_path' => 'block/geocluster-test-php-json-map',
-    'menu_name' => 'main-menu',
-  );
-  menu_link_save($item);
-
 }
 
 function geocluster_demo_preprocess_page(&$variables) {
