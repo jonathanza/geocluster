@@ -135,16 +135,16 @@ class GeoclusterHelper {
     );
   }
 
-  static function getCenter($items, $itemFactor = array()) {
+  static function getCenter($geometries, $itemFactor = array()) {
     $lat = 0;
     $lon = 0;
-    $len = count($items);
+    $len = count($geometries);
     $totalFactor = 0;
     for ($i = 0; $i < $len; $i++) {
-      $item = $items[$i];
+      $geometry = $geometries[$i];
       $factor = (isset($itemFactor[$i]) ? $itemFactor[$i] : 1);
-      $lat += $item->geocluster_geometry->getY() * $factor;
-      $lon += $item->geocluster_geometry->getX() * $factor;
+      $lat += $geometry->getY() * $factor;
+      $lon += $geometry->getX() * $factor;
       $totalFactor += $factor;
     }
     $lat = $lat / $totalFactor;

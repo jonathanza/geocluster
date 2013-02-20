@@ -10,6 +10,20 @@ function geocluster_solr_views_api() {
 }
 
 /**
+ * Implements hook_geocluster_algorithm().
+ */
+function geocluster_solr_geocluster_algorithm() {
+  return array(
+    'geocluster_solr' => array(
+      'handler' => array(
+        'label' => t('Search API Solr based clustering algorithm'),
+        'class' => 'SolrGeohashGeoclusterAlgorithm',
+      ),
+    ),
+  );
+}
+
+/**
  * Implements hook_search_api_data_type_info().
  */
 function geocluster_solr_search_api_data_type_info() {

@@ -34,8 +34,11 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
 
   /**
    * Create initial clustering from geohash grid.
+   *
+   * No default implementation, to be implemented by algorithm, if needed.
    */
-  abstract protected function preClusterByGeohash();
+  protected function preClusterByGeohash() {
+  }
 
   /**
    * Create final clusters by checking for overlapping neighbors.
@@ -56,8 +59,9 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
       foreach ($hash_stack as $hash) {
         if (isset($results_by_geohash[$hash])) {
           $other_item_key = current(array_keys($results_by_geohash[$hash]));
-          $other_item = $results_by_geohash[$hash][$other_item_key];
-          if ($this->shouldCluster($this->values[$item_key], $this->values[$other_item_key])) {
+          $geometry = $this->getGeometry($this->values[$item_key]);
+          $other_geometry = $this->getGeometry($this->values[$other_item_key]);
+          if ($this->shouldCluster($geometry, $other_geometry)) {
             $this->addCluster($item_key, $other_item_key, $current_hash, $hash, $results_by_geohash);
             if (!isset($results_by_geohash[$current_hash])) {
               continue 2;
@@ -90,19 +94,10 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
   /**
    * Determine if two geofields should be clustered as of their distance.
    */
-  protected function shouldCluster($value, $value2) {
+  protected function shouldCluster($geometry, $otherGeometry) {
     // Calculate distance.
-    $distance = GeoclusterHelper::distance_pixels($value->geocluster_geometry, $value2->geocluster_geometry, $this->resolution);
+    $distance = GeoclusterHelper::distance_pixels($geometry, $otherGeometry, $this->resolution);
     return $distance <= $this->cluster_distance;
-  }
-
-  protected function get_cluster_field_alias() {
-    $name = $this->get_cluster_field_name();
-    return $this->field_handler->aliases[$name];
-  }
-
-  protected function get_cluster_field_name() {
-    return current($this->field_handler->group_fields);
   }
 
   /**
@@ -119,7 +114,7 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
     $result1->geocluster_count += $result2->geocluster_count;
 
     // Calculate new center from all points.
-    $center = GeoclusterHelper::getCenter(array($result1, $result2), array($result1->geocluster_count, $result2->geocluster_count));
+    $center = GeoclusterHelper::getCenter(array($result1->geocluster_geometry, $result2->geocluster_geometry), array($result1->geocluster_count, $result2->geocluster_count));
     $result1->geocluster_geometry = $center;
     $result1->geocluster_lat = $center->getY();
     $result1->geocluster_lon = $center->getX();
@@ -130,6 +125,10 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
     if (count($entities_by_geohash[$hash2]) == 0) {
       unset($entities_by_geohash[$hash2]);
     }
+  }
+
+  protected function getGeometry($result) {
+    return $result->geocluster_geometry;
   }
 
 }

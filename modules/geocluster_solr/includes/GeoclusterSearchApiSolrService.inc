@@ -6,38 +6,11 @@
 class GeoclusterSearchApiSolrService extends SearchApiSolrService {
 
   /*
-   * @var Geocluster
+   * @var SolrGeohashGeoclusterAlgorithm
    */
-  var $geocluster;
+  protected $algorithm;
 
-  var $group_field;
-
-  /**
-   * Extract results from a Solr response.
-   *
-   * @param Apache_Solr_Response $response
-   *   A response object from SolrPhpClient.
-   *
-   * @return array
-   *   An array with two keys:
-   *   - result count: The number of total results.
-   *   - results: An array of search results, as specified by
-   *     SearchApiQueryInterface::execute().
-   */
-  protected function extractResults(SearchApiQueryInterface $query, Apache_Solr_Response $response) {
-    if ($this->geocluster) {
-      // Set grouping options, so search api will process single result groups correctly.
-      $options = array(
-        'use_grouping' => TRUE,
-        'fields' => array($this->group_field),
-      );
-      $query->setOption('search_api_grouping', $options);
-    }
-
-    // Let search api retrieve the results as usual.
-    $results = parent::extractResults($query, $response);
-    return $results;
-  }
+  protected $group_field;
 
   /**
    * Apply custom changes before the query
@@ -59,10 +32,10 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
     }
   }
 
-  protected function addGeoclusterParams(array &$call_args, SearchApiQueryInterface $query, Geocluster &$geocluster) {
-    $this->geocluster = &$geocluster;
+  protected function addGeoclusterParams(array &$call_args, SearchApiQueryInterface $query, SolrGeohashGeoclusterAlgorithm &$algorithm) {
+    $this->algorithm = &$algorithm;
 
-    $this->group_field = $geocluster->getFieldHandler()->field . ':geocluster_index_' . $geocluster->getGeohashLength();
+    $this->group_field = $algorithm->getFieldHandler()->field . ':geocluster_index_' . $algorithm->getGeohashLength();
     $group_limit = 1;
 
     // Solr params.
@@ -89,34 +62,70 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
    */
   protected function postQuery(array &$results, SearchApiQueryInterface $query, Apache_Solr_Response $response) {
     // Post-process clustered results.
-    if ($this->geocluster) {
+    if ($this->algorithm) {
       geophp_load();
+      $results_by_geohash = array();
       $index = $query->getIndex();
       $fields = $this->getFieldNames($index);
       $grouped_field = $fields[$this->group_field];
       $groups = &$response->grouped->{$grouped_field}->groups;
       foreach ($groups as $key => &$group) {
         // Clustered results.
-        if ($group->doclist->numFound > 1) {
-          // @todo: create cluster entity instead of fake result
-          $doc = $group->doclist->docs[0];
-          $id = $doc->{$fields['search_api_item_id']};
-          $result = &$results['results'][$id];
-          // Set geocluster specific result data.
-          $result['clustered'] = TRUE;
-          $result['geocluster_count'] = $group->doclist->numFound;
-          $geohash = $group->groupValue;
-          // TODO: improve accuracy?
-          $location = geoPHP::load($geohash, 'geohash');
-          $result['geocluster_lat'] = $location->getY();
-          $result['geocluster_lon'] = $location->getX();
 
-          // dd('hash: ' . $geohash . ' -> ' . $location->getY() . '/' . $location->getX());
-          // $result['geocluster_ids'] = "1,2,3";
-        }
+        // @todo: create cluster entity instead of fake result
+        $doc = $group->doclist->docs[0];
+        $id = $doc->{$fields['search_api_item_id']};
+        $result = &$results['results'][$id];
+        // Set geocluster specific result data.
+        $result['clustered'] = $group->doclist->numFound > 1;
+        $result['geocluster_ids'] = $id;
+        $result['geocluster_count'] = $group->doclist->numFound;
+        $geohash = $group->groupValue;
+        // TODO: improve accuracy?
+        $location = geoPHP::load($geohash, 'geohash');
+        $result['geocluster_geometry'] = $location;
+        $result['geocluster_lat'] = $location->getY();
+        $result['geocluster_lon'] = $location->getX();
+
+        // dd('hash: ' . $geohash . ' -> ' . $location->getY() . '/' . $location->getX());
+        // $result['geocluster_ids'] = "1,2,3";
+
+        $results_by_geohash[$geohash] = array(
+          $id => &$result,
+        );
       }
+
+      $this->algorithm->setValues(&$results['results']);
+      $this->algorithm->clusterByNeighborCheck($results_by_geohash);
     }
     $i = 1;
+  }
+
+  /**
+   * Extract results from a Solr response.
+   *
+   * @param Apache_Solr_Response $response
+   *   A response object from SolrPhpClient.
+   *
+   * @return array
+   *   An array with two keys:
+   *   - result count: The number of total results.
+   *   - results: An array of search results, as specified by
+   *     SearchApiQueryInterface::execute().
+   */
+  protected function extractResults(SearchApiQueryInterface $query, Apache_Solr_Response $response) {
+    if ($this->algorithm) {
+      // Set grouping options, so search api will process single result groups correctly.
+      $options = array(
+        'use_grouping' => TRUE,
+        'fields' => array($this->group_field),
+      );
+      $query->setOption('search_api_grouping', $options);
+    }
+
+    // Let search api retrieve the results as usual.
+    $results = parent::extractResults($query, $response);
+    return $results;
   }
 
   public function getFieldNames(SearchApiIndex $index, $reset = FALSE) {

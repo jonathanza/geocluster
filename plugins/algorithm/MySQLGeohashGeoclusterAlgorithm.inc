@@ -102,6 +102,15 @@ class MySQLGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
       $view->query->add_field($field->table, $additional_field, $field_key, $params);
     }
   }
+
+  protected function get_cluster_field_alias() {
+    $name = $this->get_cluster_field_name();
+    return $this->field_handler->aliases[$name];
+  }
+
+  protected function get_cluster_field_name() {
+    return current($this->field_handler->group_fields);
+  }
 }
 
 

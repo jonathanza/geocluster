@@ -12,6 +12,15 @@ define('GEOCLUSTER_ALGORITHM_OPTION', 'geocluster_algorithm');
 define('GEOCLUSTER_ALGORITHM_INFO', 'geocluster_algorithm_info');
 
 /**
+ * Implements hook_views_api().
+ */
+function geocluster_views_api() {
+  return array(
+    'api' => '3',
+  );
+}
+
+/**
  * Implements hook_ctools_plugin_type().
  */
 function geocluster_ctools_plugin_type() {
@@ -19,6 +28,26 @@ function geocluster_ctools_plugin_type() {
     'use hooks' => TRUE,
   );
   return $plugins;
+}
+
+/**
+ * Implements hook_geocluster_algorithm().
+ */
+function geocluster_geocluster_algorithm() {
+  return array(
+    'geocluster_mysql' => array(
+      'handler' => array(
+        'label' => t('MySQL Aggregation based clustering algorithm'),
+        'class' => 'MySQLGeohashGeoclusterAlgorithm',
+      ),
+    ),
+    'geocluster_php' => array(
+      'handler' => array(
+        'label' => t('PHP based clustering algorithm'),
+        'class' => 'PHPGeohashGeoclusterAlgorithm',
+      ),
+    ),
+  );
 }
 
 /**
@@ -115,35 +144,6 @@ function geocluster_get_algorithm(&$view) {
   if (isset($view->display_handler->extender['geocluster'])) {
     return $view->display_handler->extender['geocluster']->get_option(GEOCLUSTER_ALGORITHM_OPTION);
   }
-}
-
-/**
- * Implements hook_geocluster_algorithm().
- */
-function geocluster_geocluster_algorithm() {
-  return array(
-    'geocluster_mysql' => array(
-      'handler' => array(
-        'label' => t('MySQL Aggregation based clustering algorithm'),
-        'class' => 'MySQLGeohashGeoclusterAlgorithm',
-      ),
-    ),
-    'geocluster_php' => array(
-      'handler' => array(
-        'label' => t('PHP based clustering algorithm'),
-        'class' => 'PHPGeohashGeoclusterAlgorithm',
-      ),
-    ),
-  );
-}
-
-/**
- * Implements hook_views_api().
- */
-function geocluster_views_api() {
-  return array(
-    'api' => '3',
-  );
 }
 
 /**

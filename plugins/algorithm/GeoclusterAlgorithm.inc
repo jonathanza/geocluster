@@ -162,4 +162,12 @@ abstract class GeoclusterAlgorithm {
     return $this->geohash_length;
   }
 
+  public function setValues($values) {
+    $this->values = $values;
+  }
+
+  public function getValues() {
+    return $this->values;
+  }
+
 }

@@ -8,7 +8,13 @@ dependencies[] = geocluster
 dependencies[] = search_api_solr
 dependencies[] = search_api_views
 
+; Solr clustering algorithm
+files[] = plugins/algorithm/SolrGeohashGeoclusterAlgorithm.inc
+
+; Search api solr integration classes that support the solr-based clustering
 files[] = includes/GeoclusterSearchApiSolrService.inc
 files[] = includes/GeoclusterSearchApiViewsQuery.inc
 files[] = includes/GeoclusterApacheSolrResponseWrapper.inc
+
+
 

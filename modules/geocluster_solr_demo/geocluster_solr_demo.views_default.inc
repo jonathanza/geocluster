@@ -69,21 +69,24 @@ function geocluster_solr_demo_views_default_views() {
     'data' => 'full',
   );
   $handler->display->display_options['geocluster_enabled'] = 1;
-  $handler->display->display_options['geocluster_options']['cluster_field'] = 'field_place';
-  $handler->display->display_options['geocluster_options']['cluster_distance'] = '50';
+  $handler->display->display_options['geocluster_options'] = array(
+    'algorithm' => 'geocluster_solr',
+    'cluster_field' => 'field_place',
+    'cluster_distance' => '30',
+  );
 
-  /* Display: Page */
-  $handler = $view->new_display('page', 'Page', 'page');
+  /* Display: Solr JSON */
+  $handler = $view->new_display('page', 'Solr JSON', 'json');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
-  $handler->display->display_options['path'] = 'geocluster-test-solr';
+  $handler->display->display_options['path'] = 'solr-json';
   $handler->display->display_options['menu']['type'] = 'normal';
   $handler->display->display_options['menu']['title'] = 'Solr json';
-  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['weight'] = '22';
   $handler->display->display_options['menu']['name'] = 'main-menu';
   $handler->display->display_options['menu']['context'] = 0;
 
-  /* Display: Page */
-  $handler = $view->new_display('page', 'Page', 'page_1');
+  /* Display: Solr Table */
+  $handler = $view->new_display('page', 'Solr Table', 'table');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
   $handler->display->display_options['defaults']['style_plugin'] = FALSE;
   $handler->display->display_options['style_plugin'] = 'table';
@@ -132,12 +135,14 @@ function geocluster_solr_demo_views_default_views() {
   $handler->display->display_options['defaults']['row_plugin'] = FALSE;
   $handler->display->display_options['defaults']['row_options'] = FALSE;
   $handler->display->display_options['geocluster_enabled'] = 1;
-  $handler->display->display_options['geocluster_options']['cluster_field'] = 'field_place';
-  $handler->display->display_options['geocluster_options']['cluster_distance'] = '50';
-  $handler->display->display_options['path'] = 'geocluster-test-solr-table';
+  $handler->display->display_options['geocluster_options'] = array(
+    'cluster_field' => 'field_place',
+    'cluster_distance' => '50',
+  );
+  $handler->display->display_options['path'] = 'solr-table';
   $handler->display->display_options['menu']['type'] = 'normal';
   $handler->display->display_options['menu']['title'] = 'Solr table';
-  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['weight'] = '32';
   $handler->display->display_options['menu']['name'] = 'main-menu';
   $handler->display->display_options['menu']['context'] = 0;
   $export['geocluster_test_solr'] = $view;

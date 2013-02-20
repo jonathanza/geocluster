@@ -5,7 +5,6 @@
  */
 class GeoclusterSearchApiViewsQuery extends SearchApiViewsQuery {
 
-
   public function init($base_table, $base_field, $options) {
     parent::init($base_table, $base_field, $options);
   }
@@ -23,56 +22,56 @@ class GeoclusterSearchApiViewsQuery extends SearchApiViewsQuery {
    * view.
    */
   protected function addResults(array $results, $view) {
-    $rows = array();
-    $missing = array();
-    $items = array();
-    $ids = array();
+    if ($geocluster = geocluster_get_algorithm($view)) {
+      $rows = array();
+      $missing = array();
+      $items = array();
+      $ids = array();
 
-    $geocluster = geocluster_get_algorithm($view);
-    $handler = $geocluster->getFieldHandler();
-    $this->fields[$handler->real_field] = TRUE;
+      $handler = $geocluster->getFieldHandler();
+      $this->fields[$handler->real_field] = TRUE;
 
-    // First off, we try to gather as much field values as possible without
-    // loading any items.
-    foreach ($results as $id => $result) {
-      $row = array();
+      // First off, we try to gather as much field values as possible without
+      // loading any items.
+      foreach ($results as $id => $result) {
+        $row = array();
 
-      //$this->prepareEntityRow($row, $result, $id, $missing, $items, $ids);
+        //$this->prepareEntityRow($row, $result, $id, $missing, $items, $ids);
 
+        if (isset($result['geocluster_count'])) {
+          $row = $result;
+        }
+        else {
+          $this->prepareEntityRow($row, $result, $id, $missing, $items, $ids);
+        }
 
-      if (isset($result['geocluster_count'])) {
-        $row = $result;
+        // Save the row values for adding them to the Views result afterwards.
+        $rows[$id] = (object) $row;
       }
-      else {
-        $this->prepareEntityRow($row, $result, $id, $missing, $items, $ids);
+
+      // Load items of those rows which haven't got all field values, yet.
+      if (!empty($ids)) {
+        $items += $this->index->loadItems($ids);
+        // $items now includes loaded items, and those already passed in the
+        // search results.
+        foreach ($items as $id => $item) {
+          // Extract item properties.
+          $wrapper = $this->index->entityWrapper($item, FALSE);
+          $rows[$id]->_entity_properties += $this->extractFields($wrapper, $missing[$id]);
+          $rows[$id]->entity = $item;
+
+
+          $rows[$id]->geocluster_count = 1;
+          $location = $wrapper->{$handler->real_field}->value();
+          $rows[$id]->geocluster_lat = $location['lat'];
+          $rows[$id]->geocluster_lon = $location['lon'];
+          $rows[$id]->geocluster_ids = $id;
+        }
       }
 
-      // Save the row values for adding them to the Views result afterwards.
-      $rows[$id] = (object) $row;
+      // Finally, add all rows to the Views result set.
+      $view->result = array_values($rows);
     }
-
-    // Load items of those rows which haven't got all field values, yet.
-    if (!empty($ids)) {
-      $items += $this->index->loadItems($ids);
-      // $items now includes loaded items, and those already passed in the
-      // search results.
-      foreach ($items as $id => $item) {
-        // Extract item properties.
-        $wrapper = $this->index->entityWrapper($item, FALSE);
-        $rows[$id]->_entity_properties += $this->extractFields($wrapper, $missing[$id]);
-        $rows[$id]->entity = $item;
-
-
-        $rows[$id]->geocluster_count = 1;
-        $location = $wrapper->{$handler->real_field}->value();
-        $rows[$id]->geocluster_lat = $location['lat'];
-        $rows[$id]->geocluster_lon = $location['lon'];
-        $rows[$id]->geocluster_ids = $id;
-      }
-    }
-
-    // Finally, add all rows to the Views result set.
-    $view->result = array_values($rows);
   }
 
   protected function prepareEntityRow(&$row, $result, $id, &$missing, &$items, &$ids) {
