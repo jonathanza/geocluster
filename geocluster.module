@@ -74,7 +74,7 @@ function geocluster_init_config($config_backend) {
  * Initializes the geocluster algorithm.
  *
  * @param $config_backend GeoclusterConfigBackendInterface
- * @return GeoclusterMySQLGeoclusterAlgorithm
+ * @return GeoclusterAlgorithm
  */
 function geocluster_init_algorithm($config_backend) {
   $view = $config_backend->get_view();
@@ -110,7 +110,7 @@ function geocluster_init_algorithm($config_backend) {
   $zoom = isset($_GET['zoom']) ? $_GET['zoom'] : $zoom;
   $cluster_distance = isset($_GET['cluster_distance']) ? $_GET['cluster_distance'] : $cluster_distance;
 
-  if($algorithm = new GeoclusterMySQLGeoclusterAlgorithm($config_backend, $cluster_distance, $zoom, $cluster_field)) {
+  if($algorithm = new MySQLGeoclusterAlgorithm($config_backend, $cluster_distance, $zoom, $cluster_field)) {
     $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm);
   }
   return $algorithm;
@@ -143,6 +143,26 @@ function geocluster_get_algorithm(&$view) {
 }
 
 /**
+ * Implements hook_geocluster_algorithm_info().
+ */
+function geocluster_geocluster_algorithm_info() {
+  return array(
+    'geocluster_mysql' => array(
+      'handler' => array(
+        'label' => t('MySQL Aggregation based clustering algorithm'),
+        'class' => 'MySQLGeoclusterAlgorithm',
+      ),
+    ),
+    'geocluster_php' => array(
+      'handler' => array(
+        'label' => t('PHP based clustering algorithm'),
+        'class' => 'PHPGeoclusterAlgorithm',
+      ),
+    ),
+  );
+}
+
+/**
  * Implements hook_views_api().
  */
 function geocluster_views_api() {
@@ -150,7 +170,6 @@ function geocluster_views_api() {
     'api' => '3',
   );
 }
-
 
 /**
  * Invokes clustering pre execution phase before the view is executed.

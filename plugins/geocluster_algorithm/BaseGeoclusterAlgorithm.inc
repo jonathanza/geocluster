@@ -1,26 +1,14 @@
 <?php
 
 /**
- * MySQL aggregation based clustering for geocluster.
+ * @file
+ * Geocluster extension for geofield and maps.
  */
-class GeoclusterMySQLGeoclusterAlgorithm extends GeoclusterAlgorithm {
+
+abstract class BaseGeoclusterAlgorithm extends GeoclusterAlgorithm {
 
   function __construct($config, $cluster_distance, $zoom, $field_handler) {
     parent::__construct($config, $cluster_distance, $zoom, $field_handler);
-  }
-
-    /**
-   * Add geocluster-based aggregation settings before executing the view.
-   */
-  function pre_execute() {
-    if($this->config->get_option('group_by')) {
-      $view = $this->config->get_view();
-      foreach ($view->field as $field_key => $field) {
-        if (isset($field->field_info) && $field->field_info['type'] == 'geofield') {
-          $this->add_geocluster_group_by_settings($field);
-        }
-      }
-    };
   }
 
   /**
@@ -44,28 +32,10 @@ class GeoclusterMySQLGeoclusterAlgorithm extends GeoclusterAlgorithm {
     }
   }
 
-  /* HELPERS */
-
-  protected function preClusterByGeohash() {
-    $total_count = 0;
-    $results_by_geohash = array();
-    $group_field = $this->get_cluster_field_alias();
-    foreach ($this->values as $row => &$value) {
-      $hash_prefix = $value->$group_field;
-      if (empty($hash_prefix)) {
-        continue;
-      }
-      $total_count += $this->initCluster($value);
-      $results_by_geohash[$hash_prefix] = array(
-        $row => $value,
-      );
-    }
-
-    if (module_exists("devel")) {
-      dd("total items: " . $total_count);
-    }
-    return $results_by_geohash;
-  }
+  /**
+   * Create initial clustering from geohash grid.
+   */
+  abstract protected function preClusterByGeohash();
 
   /**
    * Create final clusters by checking for overlapping neighbors.
@@ -98,6 +68,9 @@ class GeoclusterMySQLGeoclusterAlgorithm extends GeoclusterAlgorithm {
     }
   }
 
+  /**
+   * Finalize clusters.
+   */
   protected function finalizeClusters() {
     foreach ($this->values as &$value) {
       if ($value->geocluster_count > 1) {
@@ -159,44 +132,4 @@ class GeoclusterMySQLGeoclusterAlgorithm extends GeoclusterAlgorithm {
     }
   }
 
-  /** HELPERS */
-
-  /**
-   * @param $field views_handler_field
-   */
-  protected function add_geocluster_group_by_settings(&$field) {
-    $group_column = 'geocluster_index_' . $this->getGeohashLength();
-    $field->options['group_column'] = $group_column;
-
-    // Add additional fields.
-    // Add concatenated list of grouped entity ids.
-    $this->add_fields(array('geocluster_ids' => 'entity_id'), 'group_concat', $field);
-
-    // Add count(entity_id).
-    $this->add_fields(array('geocluster_count' => 'entity_id'), 'count', $field);
-
-    // Add center point: avg(lat), avg(lng).
-    $avg_fields = array(
-      'geocluster_lat' => $field->field . '_' . 'lat',
-      'geocluster_lon' => $field->field . '_' . 'lon',
-    );
-    $this->add_fields($avg_fields, 'avg', $field);
-
-    // Add select fields required for field formatter.
-    // @todo: Remove? We don't support clustered data to be used with field formatters at the moment.
-    // $this->add_fields(array($field->field . '_' . 'geom'), 'min', $field);
-  }
-
-  protected function add_fields($additional_fields, $function = NULL, &$field) {
-    foreach ($additional_fields as $field_key => $additional_field) {
-      $params = array();
-      if (!empty($function)) {
-        $params['function'] = $function;
-      }
-      $view = &$this->config->get_view();
-      $view->query->add_field($field->table, $additional_field, $field_key, $params);
-    }
-  }
 }
-
-

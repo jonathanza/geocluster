@@ -6,19 +6,25 @@ core = "7.x"
 
 dependencies[] = geofield
 
-; Views GeoJSON integration doesn't exist at the moment.
 ;dependencies[] = views_geojson
 
 files[] = geocluster.install
 
-files[] = includes/GeoclusterAlgorithm.inc
+; Geocluster algorithm
+files[] = plugins/geocluster_algorithm/GeoclusterAlgorithm.inc
+files[] = plugins/geocluster_algorithm/BaseGeoclusterAlgorithm.inc
+files[] = plugins/geocluster_algorithm/PHPGeoclusterAlgorithm.inc
+files[] = plugins/geocluster_algorithm/MySQLGeoclusterAlgorithm.inc
+
+; Geocluster config + views integration
 files[] = includes/GeoclusterConfig.inc
 files[] = includes/GeoclusterConfigBackendInterface.inc
+files[] = views/GeoclusterConfigViewsDisplayExtender.inc
+
+; Helpers
 files[] = includes/GeoclusterHelper.inc
 files[] = includes/GeohashHelper.inc
 files[] = includes/GeohashUtils.inc
-
-files[] = views/GeoclusterConfigViewsDisplayExtender.inc
 files[] = views/handlers/geocluster_handler_field_default.inc
 files[] = views/handlers/geocluster_handler_field_numeric.inc
 

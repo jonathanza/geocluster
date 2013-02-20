@@ -3,7 +3,7 @@
 define('GEOCLUSTER_VIEWS_SECTION', 'style_options');
 
 /**
- * Display extender class that integrates geocluster with views.
+ * Display extender class that integrates geocluster config with views.
  */
 class GeoclusterConfigViewsDisplayExtender extends views_plugin_display_extender implements GeoclusterConfigBackendInterface {
 
