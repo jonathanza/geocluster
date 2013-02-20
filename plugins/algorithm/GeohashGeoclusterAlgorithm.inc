@@ -42,6 +42,7 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
    * @param $results_by_geohash
    */
   protected function clusterByNeighborCheck(&$results_by_geohash) {
+    ksort($results_by_geohash);
     foreach ($results_by_geohash as $current_hash => &$results) {
       if (empty($current_hash)) {
         continue;
