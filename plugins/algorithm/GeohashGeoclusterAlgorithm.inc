@@ -82,9 +82,7 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
   /*** ALGORITHM HELPERS ***/
 
   protected function initCluster(&$value) {
-    $lon = $value->geocluster_lon;
-    $lat = $value->geocluster_lat;
-    $value->geocluster_geometry = new Point($lon, $lat);
+    $value->geocluster_geometry = new Point($value->geocluster_lon, $value->geocluster_lat);
     $value->clustered = TRUE;
     return $value->geocluster_count;
   }

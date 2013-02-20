@@ -64,9 +64,12 @@ class MySQLGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
   /** HELPERS */
 
   /**
+   * Adds geocluster-specific group_by settings to the query.
+   *
    * @param $field views_handler_field
    */
   protected function add_geocluster_group_by_settings(&$field) {
+    // Set the group column to the appropriate geocluster index level.
     $group_column = 'geocluster_index_' . $this->getGeohashLength();
     $field->options['group_column'] = $group_column;
 

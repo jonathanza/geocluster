@@ -31,13 +31,19 @@ class PHPGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
       // Add all points within the current geohash to a cluster.
       foreach ($entities as $key => &$entity) {
         if (!isset($cluster_id)) {
+          $value = &$this->values[$key];
+          $value->geocluster_ids = $value->{$this->field_handler->field_alias};
+          $value->geocluster_count = 1;
+          $value->geocluster_lon = $value->geocluster_geometry->getX();
+          $value->geocluster_lat = $value->geocluster_geometry->getY();
+          // $entity->geocluster_geometry = $center;
+          $this->initCluster($value);
           $cluster_id = $key;
         }
         else {
           $this->addCluster($cluster_id, $key, $current_hash, $current_hash, $entities_by_geohash);
         }
       }
-      $this->updateCluster($cluster_id);
     }
 
     return $entities_by_geohash;
@@ -68,7 +74,7 @@ class PHPGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
     $entities_by_type = array();
     $revisions_by_type = array();
     foreach ($this->values as $key => $object) {
-      if (isset($object->{$this->field_handler->field_alias}) && !isset($values[$key]->_field_data[$this->field_handler->field_alias])) {
+      if (isset($object->{$this->field_handler->field_alias}) && !isset($this->values[$key]->_field_data[$this->field_handler->field_alias])) {
         $entity_type = $object->{$this->field_handler->aliases['entity_type']};
         if (empty($this->field_handler->definition['is revision'])) {
           $entity_id = $object->{$this->field_handler->field_alias};
@@ -124,6 +130,27 @@ class PHPGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
     }
     ksort($entities_by_geohash);
     return $entities_by_geohash;
+  }
+
+  /**
+   * Helper function to get the geofield with its geometry for a given result.
+   *
+   * Geometry will only we loaded once and stored in the geofield.
+   *
+   * @param $entities all result entities that have been loaded
+   * @param $value the current result row value set
+   */
+  function &get_geofield_with_geometry(&$value) {
+    $entity = &$value->_field_data[$this->field_handler->field_alias]['entity'];
+
+    $geofield = &$entity->{$this->field_handler->field_info['field_name']}[LANGUAGE_NONE][0];
+    if (!isset($value->geocluster_geometry)) {
+      $value->geocluster_geometry = geoPHP::load($geofield['geom'], 'wkb');
+    }
+    if (!isset($geofield['geohash'])) {
+      $geofield['geohash'] = $value->geocluster_geometry->out('geohash');
+    }
+    return $geofield;
   }
 
 
