@@ -118,7 +118,7 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       $this->algorithm->clusterByNeighborCheck($results_by_geohash);
 
       dd(timer_read("geocluster") . "ms: merged & finalized clusters: " . count($results['results']));
-      dd("total items: " . $total_items);
+      dd(timer_read("geocluster") . "ms: total items within clusters: " . $total_items);
       timer_stop("geocluster");
 
     }

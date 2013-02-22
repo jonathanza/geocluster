@@ -39,7 +39,7 @@ function geocluster_demo_leaflet_map_info() {
         'lat' => 47.88101
       ),
       'settings' => array(
-        'zoom' => 7,
+        'zoom' => 2,
         'minZoom' => 0,
         'maxZoom' => 16,
         'dragging' => TRUE,
@@ -73,7 +73,7 @@ function geocluster_demo_leaflet_map_info() {
         'lat' => 47.88101
       ),
       'settings' => array(
-        'zoom' => 7,
+        'zoom' => 2,
         'minZoom' => 0,
         'maxZoom' => 16,
         'dragging' => TRUE,

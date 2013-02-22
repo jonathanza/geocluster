@@ -23,7 +23,7 @@ function geocluster_demo_uuid_features_default_beans() {
         'height' => '400',
         'override_map_settings' => 1,
         'map_settings' => array(
-          'zoom' => '7',
+          'zoom' => '2',
           'center' => array(
             'lon' => '14.56667',
             'lat' => '48.03333',
@@ -40,7 +40,7 @@ function geocluster_demo_uuid_features_default_beans() {
       'height' => '400',
       'override_map_settings' => 1,
       'map_settings' => array(
-        'zoom' => '7',
+        'zoom' => '2',
         'center' => array(
           'lon' => '14.56667',
           'lat' => '48.03333',
@@ -61,7 +61,7 @@ function geocluster_demo_uuid_features_default_beans() {
         'height' => '400',
         'override_map_settings' => 1,
         'map_settings' => array(
-          'zoom' => '7',
+          'zoom' => '2',
           'center' => array(
             'lon' => '14.56667',
             'lat' => '48.03333',
@@ -78,7 +78,7 @@ function geocluster_demo_uuid_features_default_beans() {
       'height' => '400',
       'override_map_settings' => 1,
       'map_settings' => array(
-        'zoom' => '7',
+        'zoom' => '2',
         'center' => array(
           'lon' => '14.56667',
           'lat' => '48.03333',
