@@ -18,14 +18,6 @@ define('GEOCLUSTER_GEOHASH_LENGTH', 12);
  */
 function geocluster_field_schema_alter(&$schema, $field) {
   if ($field['type'] == 'geofield') {
-    // Adds the geohash column.
-    $schema['columns']['geohash'] = array(
-      'description' => "Geohash.",
-      'type' => 'varchar',
-      'length' => GEOCLUSTER_GEOHASH_LENGTH,
-      'not null' => FALSE,
-    );
-    // $schema['indexes']['fid_geohash'] = array('fid', 'geohash');
 
     // Adds separate columns for the geohash indices, from length 1 to max.
     for ($i = 1; $i <= GEOCLUSTER_GEOHASH_LENGTH; $i++) {
@@ -55,14 +47,10 @@ function geocluster_field_attach_presave($entity_type, $entity) {
         &&'geofield' === $field_info[$field_info_instance['field_id']]['type']
         && !empty($entity->{$name}[LANGUAGE_NONE][0])) {
       $field = &$entity->{$name}[LANGUAGE_NONE][0];
-      $geohash = _geocluster_get_geohash($field['geom']);
-
-      // Add data for standard geohash column.
-      $field['geohash'] = $geohash;
 
       // Add data for geohash prefix columns.
       for ($i = GEOCLUSTER_GEOHASH_LENGTH; $i > 0; $i--) {
-        $field['geocluster_index_' . $i] = _geocluster_get_geohash_prefix($geohash, $i);
+        $field['geocluster_index_' . $i] = _geocluster_get_geohash_prefix($field['geohash'], $i);
       }
     }
   }
@@ -118,8 +106,7 @@ function _geocluster_add_geohash_property(&$value) {
  * Getter callback for a geofield geohash property.
  */
 function geocluster_geohash_property_get_callback($entity, array $options, $name, $type, $info) {
-  // @todo: use stored geohash directly instead of converting from geom.
-  return _geocluster_get_geohash($entity['geom']);
+  return $entity['geohash'];
 }
 
 /**
@@ -155,18 +142,6 @@ function geocluster_index_property_get_callback($entity, array $options, $name, 
 }
 
 /*** INTERNAL HELPERS ***/
-
-/**
- * Get a geohash from a given geofield geom value.
- *
- * @param $geom
- * @return mixed
- */
-function _geocluster_get_geohash($geom) {
-  geophp_load();
-  $geometry = geoPHP::load($geom);
-  return $geometry->out('geohash');
-}
 
 /**
  * Get a geohash prefix of a specified, maximum length.

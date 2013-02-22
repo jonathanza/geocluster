@@ -148,10 +148,7 @@ class PHPGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
 
     $geofield = &$entity->{$this->field_handler->field_info['field_name']}[LANGUAGE_NONE][0];
     if (!isset($value->geocluster_geometry)) {
-      $value->geocluster_geometry = geoPHP::load($geofield['geom'], 'wkb');
-    }
-    if (!isset($geofield['geohash'])) {
-      $geofield['geohash'] = $value->geocluster_geometry->out('geohash');
+      $value->geocluster_geometry = geoPHP::load($geofield['geom']);
     }
     return $geofield;
   }
