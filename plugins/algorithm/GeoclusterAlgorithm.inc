@@ -100,6 +100,7 @@ abstract class GeoclusterAlgorithm {
           " , distance: " . $this->cluster_distance .
           " , geohash_length: " . $this->geohash_length;
       dd("");
+      dd(get_class($this));
       dd(timer_read("geocluster") . "ms: setup: " . $debug);
     }
   }

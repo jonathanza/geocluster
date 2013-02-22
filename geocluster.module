@@ -104,20 +104,17 @@ function geocluster_init_algorithm($config_backend) {
   // Dynamically instantiate selected algorithm.
   $algorithm = $geocluster_options['algorithm'];
 
-  if (FALSE) {
-    if($algorithm = new MySQLGeohashGeoclusterAlgorithm($config_backend, $cluster_distance, $zoom, $cluster_field)) {
-      $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm);
+  if ($class = ctools_plugin_load_class('geocluster', 'algorithm', $algorithm, 'handler')) {
+    print_r($class);
+    if($algorithm_class = new $class($config_backend, $cluster_distance, $zoom, $cluster_field)) {
+      $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm_class);
+      return $algorithm_class;
     }
-  }
-  else {
-    if ($class = ctools_plugin_load_class('geocluster', 'algorithm', $algorithm, 'handler')) {
-      if($algorithm = new $class($config_backend, $cluster_distance, $zoom, $cluster_field)) {
-        $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm);
-      }
+    else {
+      throw new Exception("algorithm not found: " . $algorithm);
     }
   }
 
-  return $algorithm;
 }
 
 

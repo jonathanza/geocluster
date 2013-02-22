@@ -30,7 +30,7 @@ class GeoclusterConfigViewsDisplayExtender extends views_plugin_display_extender
     }
   }
 
-  function options_submit($form, &$form_state) {
+  function options_submit(&$form, &$form_state) {
     if ($form_state['section'] == GEOCLUSTER_VIEWS_SECTION) {
       $this->config->options_submit($form, $form_state);
     }
