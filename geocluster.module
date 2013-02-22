@@ -183,7 +183,7 @@ function geocluster_views_post_execute_query(&$view) {
  * Implements hook_views_geojson_render_fields_alter().
  */
 function geocluster_views_geojson_render_fields_alter(&$feature, $view, $row, $index) {
-  if (!empty($row->clustered)) {
+  if (!empty($row->geocluster_count) && $row->geocluster_count > 1) {
     $feature['clustered'] = TRUE;
     $feature['cluster_items'] = $row->geocluster_count;
   }
