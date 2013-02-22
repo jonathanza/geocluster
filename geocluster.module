@@ -79,7 +79,7 @@ function geocluster_init_algorithm($config_backend) {
   $cluster_field = $view->field[$field_name];
 
   // Default zoom.
-  $zoom = 7;
+  $zoom = 1;
 
   // Add customizations based on style plugin.
   // @todo: make this a separate function or hook

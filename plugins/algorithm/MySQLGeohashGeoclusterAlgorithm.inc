@@ -31,10 +31,10 @@ class MySQLGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
     $results_by_geohash = array();
     $group_field = $this->get_cluster_field_alias();
     foreach ($this->values as $row => &$value) {
-      $hash_prefix = $value->$group_field;
-      if (empty($hash_prefix)) {
+      if (!isset($value->$group_field)) {
         continue;
       }
+      $hash_prefix = $value->$group_field;
       $total_count += $this->initCluster($value);
       $results_by_geohash[$hash_prefix] = array(
         $row => $value,
