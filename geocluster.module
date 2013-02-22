@@ -105,7 +105,6 @@ function geocluster_init_algorithm($config_backend) {
   $algorithm = $geocluster_options['algorithm'];
 
   if ($class = ctools_plugin_load_class('geocluster', 'algorithm', $algorithm, 'handler')) {
-    print_r($class);
     if($algorithm_class = new $class($config_backend, $cluster_distance, $zoom, $cluster_field)) {
       $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm_class);
       return $algorithm_class;
