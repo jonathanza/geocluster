@@ -84,7 +84,7 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       $index = $query->getIndex();
       $fields = $this->getFieldNames($index);
       $grouped_field = $fields[$this->group_field];
-      $groups = &$response->grouped->{$grouped_field}->groups;
+      $groups = $response->grouped->{$grouped_field}->groups;
       dd(timer_read("geocluster") . "ms: items from database: " . count($groups));
       foreach ($groups as $key => &$group) {
 

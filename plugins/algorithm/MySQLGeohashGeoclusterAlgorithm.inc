@@ -96,7 +96,7 @@ class MySQLGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
       if (!empty($function)) {
         $params['function'] = $function;
       }
-      $view = &$this->config->get_view();
+      $view = $this->config->get_view();
       $view->query->add_field($field->table, $additional_field, $field_key, $params);
     }
   }

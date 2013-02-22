@@ -33,6 +33,13 @@ function geocluster_solr_demo_uuid_features_default_beans() {
     ),
     'delta' => 'geocluster-test-solr-json-map',
     'view_mode' => 'default',
+    'vid' => '3',
+    'created' => '1361492666',
+    'changed' => '1361492666',
+    'log' => NULL,
+    'uid' => '0',
+    'default_revision' => '1',
+    'revisions' => array(),
     'uuid' => '82422f96-b1d3-43f8-b536-43e36d9db72c',
     'settings' => array(
       'source' => 'geocluster_test_solr_json',
