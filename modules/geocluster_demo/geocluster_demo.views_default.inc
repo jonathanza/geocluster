@@ -234,7 +234,7 @@ function geocluster_demo_views_default_views() {
     'cluster_field' => 'field_place',
     'cluster_distance' => '65',
   );
-  $handler->display->display_options['path'] = 'mysql-geojson';
+  $handler->display->display_options['path'] = 'mysql-json';
   $handler->display->display_options['menu']['type'] = 'normal';
   $handler->display->display_options['menu']['title'] = 'MySQL json';
   $handler->display->display_options['menu']['weight'] = '20';
@@ -394,7 +394,7 @@ function geocluster_demo_views_default_views() {
     'cluster_field' => 'field_place',
     'cluster_distance' => '65',
   );
-  $handler->display->display_options['path'] = 'php-geojson';
+  $handler->display->display_options['path'] = 'php-json';
   $handler->display->display_options['menu']['type'] = 'normal';
   $handler->display->display_options['menu']['title'] = 'PHP json';
   $handler->display->display_options['menu']['weight'] = '21';
