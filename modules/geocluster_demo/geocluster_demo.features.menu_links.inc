@@ -10,6 +10,24 @@
 function geocluster_demo_menu_default_menu_links() {
   $menu_links = array();
 
+  // Exported menu link: main-menu:block/geocluster-test-default-json-map
+  $menu_links['main-menu:block/geocluster-test-default-json-map'] = array(
+    'menu_name' => 'main-menu',
+    'link_path' => 'block/geocluster-test-default-json-map',
+    'router_path' => 'block/%',
+    'link_title' => 'Default map',
+    'options' => array(
+      'attributes' => array(
+        'title' => '',
+      ),
+    ),
+    'module' => 'menu',
+    'hidden' => '0',
+    'external' => '0',
+    'has_children' => '0',
+    'expanded' => '0',
+    'weight' => '13',
+  );
   // Exported menu link: main-menu:block/geocluster-test-mysql-json-map
   $menu_links['main-menu:block/geocluster-test-mysql-json-map'] = array(
     'menu_name' => 'main-menu',
@@ -48,6 +66,7 @@ function geocluster_demo_menu_default_menu_links() {
   );
   // Translatables
   // Included for use with string extractors like potx.
+  t('Default map');
   t('MySQL map');
   t('PHP map');
 
