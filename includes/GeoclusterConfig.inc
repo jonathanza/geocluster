@@ -38,7 +38,7 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
         '#type' => 'checkbox',
         '#title' => 'Enable geocluster for this search.',
         '#default_value' => $this->get_option('geocluster_enabled'),
-        '#description' => t("@todo: description"),
+        // '#description' => t("@todo: description"),
       );
 
       // An additional fieldset provides additional options.
