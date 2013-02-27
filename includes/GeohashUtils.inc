@@ -49,7 +49,7 @@ class GeoHashUtils {
     $b = GeoHashUtils::$borders[$type];
     $n = GeoHashUtils::$neighbors[$type];
     $val = strpos($b[$direction], $last);
-    if (($val !== false) && ($val != -1))
+    if (($val !== false) && ($val != -1) && strlen($base) > 0)
       $base = GeoHashUtils::calcNeighbors($base, $direction);
 
     $ni = strpos($n[$direction], $last);

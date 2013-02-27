@@ -26,9 +26,14 @@ testPaths() {
   local items=$3
   for path in "${paths[@]}"
   do
-    if [ $items -gt 10000 -a "$path" == "php-geojson" ]
+    if [ $items -gt 10000 -a "$path" == "php-json" ]
   	then
   	  debug "skip php for more than 10000 items"
+  		continue
+  	fi
+    if [ $items -gt 10000 -a "$path" == "default-json" ]
+  	then
+  	  debug "skip default for more than 10000 items"
   		continue
   	fi
 
@@ -58,9 +63,10 @@ cleanup() {
 
 base="https://geocluster-dasjo.dev1.epiqo.com/"
 paths=( \
-  'mysql-geojson' \
+  'mysql-json' \
   'solr-json' \
-  'php-geojson' \
+  'php-json' \
+  'default-json' \
 )
 
 cleanup
@@ -69,13 +75,19 @@ batch=$3
 max_items=$4
 items=0
 while [ $items -lt $max_items ]; do
+   let add=batch/2-items
+   let items+=add
+   echo Plus $add items to $items
+   drush genc $add --types=article
+   testPaths "$1" $2 $items
+
    let add=batch-items
    let items+=add
-   echo Increasing items to: $items
+   echo Plus $add items to $items
    drush genc $add --types=article
-   let batch*=10
-
    testPaths "$1" $2 $items
+
+   let batch*=10
 done
 
 # print results
