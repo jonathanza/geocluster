@@ -74,7 +74,9 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
    *   The response object returned by Solr.
    */
   protected function postQuery(array &$results, SearchApiQueryInterface $query, Apache_Solr_Response $response) {
-    dd(timer_read("geocluster") . "ms: started clustering");
+    if (module_exists('devel')) {
+      dd(timer_read("geocluster") . "ms: started clustering");
+    }
 
     // Post-process clustered results.
     if ($this->algorithm) {
@@ -85,7 +87,9 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       $fields = $this->getFieldNames($index);
       $grouped_field = $fields[$this->group_field];
       $groups = $response->grouped->{$grouped_field}->groups;
-      dd(timer_read("geocluster") . "ms: items from database: " . count($groups));
+      if (module_exists('devel')) {
+        dd(timer_read("geocluster") . "ms: items from database: " . count($groups));
+      }
       foreach ($groups as $key => &$group) {
 
         // Clustered results.
@@ -111,15 +115,18 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
         );
       }
 
-      dd(timer_read("geocluster") . "ms: pre-clustered by geohash: " . count($groups));
-
+      if (module_exists('devel')) {
+        dd(timer_read("geocluster") . "ms: pre-clustered by geohash: " . count($groups));
+      }
 
       $this->algorithm->setValues(&$results['results']);
       $this->algorithm->clusterByNeighborCheck($results_by_geohash);
 
-      dd(timer_read("geocluster") . "ms: merged & finalized clusters: " . count($results['results']));
-      dd(timer_read("geocluster") . "ms: total items within clusters: " . $total_items);
-      timer_stop("geocluster");
+      if (module_exists('devel')) {
+        dd(timer_read("geocluster") . "ms: merged & finalized clusters: " . count($results['results']));
+        dd(timer_read("geocluster") . "ms: total items within clusters: " . $total_items);
+        timer_stop("geocluster");
+      }
 
     }
     $i = 1;
