@@ -33,7 +33,7 @@ function geocluster_solr_demo_uuid_features_default_beans() {
     ),
     'delta' => 'geocluster-test-solr-json-map',
     'view_mode' => 'default',
-    'vid' => '3',
+    'vid' => '4',
     'created' => '1361492666',
     'changed' => '1361492666',
     'log' => NULL,
