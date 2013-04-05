@@ -80,3 +80,5 @@ projects[ctools][version] = 1
 projects[features][version] = 1
 projects[diff][version] = 2
 
+projects[admin_menu][version] = 3
+
