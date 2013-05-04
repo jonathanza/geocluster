@@ -56,7 +56,18 @@
 
     if (marker.icon) {
       if (marker.icon.clustered) {
-        var icon = new L.NumberedDivIcon({number: marker.cluster_items || 1});
+        // var icon = new L.NumberedDivIcon({number: marker.cluster_items || 1});
+
+          var c = ' marker-cluster-';
+          if (marker.cluster_items < 10) {
+              c += 'small';
+          } else if (marker.cluster_items < 100) {
+              c += 'medium';
+          } else {
+              c += 'large';
+          }
+        var icon = new L.DivIcon({ html: '<div><span>' + marker.cluster_items + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
+
       }
       else {
         var icon = new L.Icon({iconUrl: marker.icon.iconUrl});
