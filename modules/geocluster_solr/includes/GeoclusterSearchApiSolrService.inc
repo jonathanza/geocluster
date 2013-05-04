@@ -56,7 +56,15 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       'group'           => 'true',
       'group.limit'     => $group_limit,
       'group.field'     => array('ss_' . $this->group_field),
+      // Use Solr Stats component to calculate mean of grouped lat/lon values.
+      'stats' => 'true',
+      'stats.facet' => array('ss_' . $this->group_field),
+      'stats.field' => array(
+        'fs_' . $algorithm->getFieldHandler()->field . ':lat',
+        'fs_' . $algorithm->getFieldHandler()->field . ':lon'
+      ),
     );
+
     $call_args['params'] += $params;
     //$call_args['limit'] = 10;
   }
@@ -90,6 +98,14 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       if (module_exists('devel')) {
         dd(timer_read("geocluster") . "ms: items from database: " . count($groups));
       }
+
+      // Prepare data for getting cluster centers from solr stats component.
+      $stats_field_lat = 'fs_' . $this->algorithm->getFieldHandler()->field . ':lat';
+      $stats_field_lon = 'fs_' . $this->algorithm->getFieldHandler()->field . ':lon';
+      $stats = $response->stats->stats_fields;
+      $stats_lat = $stats->{$stats_field_lat}->facets->{$grouped_field};
+      $stats_lon = $stats->{$stats_field_lon}->facets->{$grouped_field};
+
       foreach ($groups as $key => &$group) {
 
         // Clustered results.
@@ -105,7 +121,11 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
         $total_items += $group->doclist->numFound;
         $geohash = $group->groupValue;
         // TODO: improve accuracy?
-        $location = geoPHP::load($geohash, 'geohash');
+        //$location = geoPHP::load($geohash, 'geohash');
+        $location = new Point(
+          $stats_lon->{$geohash}->mean,
+          $stats_lat->{$geohash}->mean
+        );
         $result['geocluster_geometry'] = $location;
         $result['geocluster_lat'] = $location->getY();
         $result['geocluster_lon'] = $location->getX();
