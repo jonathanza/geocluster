@@ -10,7 +10,7 @@
 function geocluster_demo_content_enable() {
   $values = array();
   $values['values']['title_length'] = 6;
-  $values['values']['num_nodes'] = 100;
+  $values['values']['num_nodes'] = 10000;
   $values['values']['node_types'] = array('article' => 'article');
 
   $path = drupal_get_path('module', 'devel_generate');
