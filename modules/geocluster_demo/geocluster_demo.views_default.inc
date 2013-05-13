@@ -178,7 +178,7 @@ function geocluster_demo_views_default_views() {
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
   $handler->display->display_options['fields']['title']['field'] = 'title';
-  $handler->display->display_options['fields']['title']['group_type'] = 'count';
+  $handler->display->display_options['fields']['title']['group_type'] = 'group_concat';
   /* Field: Content: Geocluster lat (field_place) */
   $handler->display->display_options['fields']['geocluster_lat']['id'] = 'geocluster_lat';
   $handler->display->display_options['fields']['geocluster_lat']['table'] = 'field_data_field_place';
@@ -221,8 +221,8 @@ function geocluster_demo_views_default_views() {
   $handler->display->display_options['style_options']['data_source']['longitude'] = 'geocluster_lon';
   $handler->display->display_options['style_options']['data_source']['geofield'] = 'field_place';
   $handler->display->display_options['style_options']['data_source']['wkt'] = 'field_place';
-  $handler->display->display_options['style_options']['data_source']['name_field'] = 'geocluster_count';
-  $handler->display->display_options['style_options']['data_source']['description_field'] = 'geocluster_ids';
+  $handler->display->display_options['style_options']['data_source']['name_field'] = 'title';
+  $handler->display->display_options['style_options']['data_source']['description_field'] = '';
   $handler->display->display_options['style_options']['jsonp_prefix'] = '';
   $handler->display->display_options['style_options']['using_views_api_mode'] = 0;
   $handler->display->display_options['defaults']['style_options'] = FALSE;
