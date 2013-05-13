@@ -2,5 +2,6 @@ name = Geocluster Demo Content
 core = 7.x
 php = 5.2.4
 dependencies[] = geocluster_demo
+dependencies[] = devel_generate
 package = Mapping
 description = Demo content for the Geocluster demo feature.

@@ -48,8 +48,8 @@ projects[geophp][version] = 1
 projects[leaflet_geojson] = 1
 projects[bean] = 1
 projects[entity] = 1
-projects[uuid][version] = 1.x-dev
-projects[uuid_features][version] = 1.x-dev
+projects[uuid][version] = 1.0-alpha4
+projects[uuid_features][version] = 1.0-alpha3
 ; Add support for Bean exporting (deployable bean instances). http://drupal.org/node/1849668#comment-6777656
 projects[uuid_features][patch][] = http://drupal.org/files/uuid_features-bean_uuid_export_support-1849668-2.patch
 
@@ -59,7 +59,7 @@ projects[uuid_features][patch][] = http://drupal.org/files/uuid_features-bean_uu
 projects[search_api][version] = 1
 ; Add hook_search_api_views_pre_execute http://drupal.org/node/1832586
 projects[search_api][patch][] = http://drupal.org/files/1832586_search_api_views_pre_execute.patch
-projects[search_api_solr][version] = 1
+projects[search_api_solr][version] = 1.0-rc3
 ; Field collapsing http://drupal.org/node/1721262#comment-6841572
 projects[search_api_solr][patch][] = http://drupal.org/files/search_api_solr-field-collapsing-support-1721262-16_0.patch
 
