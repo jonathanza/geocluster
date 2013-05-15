@@ -37,6 +37,12 @@ abstract class GeohashGeoclusterAlgorithm extends GeoclusterAlgorithm {
   protected function preClusterByGeohash() {
   }
 
+  static function sortResultsByCount($a, $b) {
+    $item = current($a);
+    $item2 = current($b);
+    return $item->geocluster_count < $item2->geocluster_count;
+  }
+
   /**
    * Create final clusters by checking for overlapping neighbors.
    *

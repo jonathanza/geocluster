@@ -17,6 +17,7 @@ files[] = plugins/algorithm/GeoclusterAlgorithm.inc
 files[] = plugins/algorithm/GeohashGeoclusterAlgorithm.inc
 files[] = plugins/algorithm/PHPGeohashGeoclusterAlgorithm.inc
 files[] = plugins/algorithm/MySQLGeohashGeoclusterAlgorithm.inc
+files[] = plugins/algorithm/MySQLGeohashGeoclusterAlgorithm2.inc
 
 ; Geocluster config + views integration
 files[] = includes/GeoclusterConfig.inc

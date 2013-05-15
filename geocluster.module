@@ -41,6 +41,12 @@ function geocluster_geocluster_algorithm() {
         'class' => 'MySQLGeohashGeoclusterAlgorithm',
       ),
     ),
+    'geocluster_mysql2' => array(
+      'handler' => array(
+        'label' => t('MySQL2 Aggregation based clustering algorithm'),
+        'class' => 'MySQLGeohashGeoclusterAlgorithm2',
+      ),
+    ),
     'geocluster_php' => array(
       'handler' => array(
         'label' => t('PHP based clustering algorithm'),
