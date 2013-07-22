@@ -16,8 +16,6 @@ projects[geocluster][version] = 1.x-dev
 ;projects[geocluster][download][revision] = 510c62a6154a202e468f2160f4c7f0589c9e6593
 
 projects[geofield][version] = 2
-; Devel generate integration uses wrong array structure http://drupal.org/node/1924188
-projects[geofield][patch][] = http://drupal.org/files/geofield_devel_generate_fix.patch
 
 projects[leaflet][version] = 1
 
