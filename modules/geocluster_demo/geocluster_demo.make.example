@@ -3,24 +3,23 @@ api = 2
 core = 7.x
 projects[drupal][type] = core
 ; No hook_field_schema_alter() http://drupal.org/node/691932#comment-6635614
-projects[drupal][patch][] = http://drupal.org/files/field_d7-backport-for-hook_field_schema_alter_691932_58.patch
+projects[drupal][patch][] = https://drupal.org/files/issues/field_d7-backport-for-hook_field_schema_alter_691932_89.patch
 
 
 ; Modules
 
-projects[libraries] = 1
+projects[libraries] = 2
 
 projects[geocluster][version] = 1.x-dev
-;projects[geocluster][download][type] = git
-;projects[geocluster][download][branch] = 7.x-1.x
-;projects[geocluster][download][revision] = 510c62a6154a202e468f2160f4c7f0589c9e6593
+;;projects[geocluster][patch][] = https://drupal.org/files/issues/use-view-plugin-query-method-2174515-03.patch
 
 projects[geofield][version] = 2
 
 projects[leaflet][version] = 1
+projects[leaflet][patch][] = https://drupal.org/files/issues/leaflet_library_version_not_detected-2152423-28.patch
 
 libraries[leaflet][download][type] = get
-libraries[leaflet][download][url] = https://github.com/Leaflet/Leaflet/zipball/v0.5.1
+libraries[leaflet][download][url] = http://leaflet-cdn.s3.amazonaws.com/build/leaflet-0.7.1.zip
 libraries[leaflet][directory_name] = leaflet
 libraries[leaflet][destination] = libraries
 
@@ -36,7 +35,7 @@ projects[views_geojson][patch][] = http://drupal.org/files/views_geojson_render_
 ; Recent geofield changes require changes http://drupal.org/node/1794848
 projects[views_geojson][patch][] = http://drupal.org/files/views_geojson_geofield_changes.patch
 ; BBox argument handler fixes http://drupal.org/node/1839554#comment-6726986
-projects[views_geojson][patch][] = http://drupal.org/files/1839554_views_geojson_bbox_argument_handler_fixes_11.patch
+projects[views_geojson][patch][] = https://drupal.org/files/issues/1839554_views_geojson_bbox_argument_handler_fixes_15.patch
 
 projects[geophp][version] = 1
 
@@ -44,6 +43,7 @@ projects[geophp][version] = 1
 ; Demo modules
 
 projects[leaflet_geojson] = 1
+
 projects[bean] = 1
 projects[entity] = 1
 projects[uuid][version] = 1.0-alpha4
