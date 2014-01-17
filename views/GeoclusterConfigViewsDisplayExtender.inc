@@ -42,6 +42,28 @@ class GeoclusterConfigViewsDisplayExtender extends views_plugin_display_extender
     }
   }
 
+  /**
+   * Dynamically update the grouping index field.
+   */
+  function pre_execute() {
+    if ($this->get_option('geocluster_enabled')) {
+      if ($algorithm = geocluster_init_algorithm($this->config)) {
+        $algorithm->before_pre_execute();
+      }
+    }
+  }
+
+  /**
+   * Inject necessary aggregate fields into the query.
+   */
+  function query() {
+    if ($this->get_option('geocluster_enabled')) {
+      if ($algorithm = geocluster_init_algorithm($this->config)) {
+        $algorithm->pre_execute();
+      }
+    }
+  }
+
   /** HELPERS */
 
   /**

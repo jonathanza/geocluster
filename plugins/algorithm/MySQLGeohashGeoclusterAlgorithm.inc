@@ -9,7 +9,25 @@ class MySQLGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
     parent::__construct($config, $cluster_distance, $zoom, $field_handler);
   }
 
-    /**
+  /**
+   * Add the required geohash index to the query.
+   *
+   * This must be done before the view is built.
+   */
+  function before_pre_execute() {
+    if($this->config->get_option('group_by')) {
+      $view = $this->config->get_view();
+      foreach ($view->field as $field_key => $field) {
+        if (isset($field->field_info) && $field->field_info['type'] == 'geofield') {
+          // Set the group column to the appropriate geocluster index level.
+          $group_column = 'geocluster_index_' . $this->getGeohashLength();
+          $field->options['group_column'] = $group_column;
+        }
+      }
+    }
+  }
+
+  /**
    * Add geocluster-based aggregation settings before executing the view.
    */
   function pre_execute() {
@@ -67,10 +85,6 @@ class MySQLGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
    * @param $field views_handler_field
    */
   protected function add_geocluster_group_by_settings(&$field) {
-    // Set the group column to the appropriate geocluster index level.
-    $group_column = 'geocluster_index_' . $this->getGeohashLength();
-    $field->options['group_column'] = $group_column;
-
     // Add additional fields.
     // Add concatenated list of grouped entity ids.
     $this->add_fields(array('geocluster_ids' => 'entity_id'), 'group_concat', $field);
@@ -97,7 +111,7 @@ class MySQLGeohashGeoclusterAlgorithm extends GeohashGeoclusterAlgorithm {
         $params['function'] = $function;
       }
       $view = $this->config->get_view();
-      $view->query->add_field($field->table, $additional_field, $field_key, $params);
+      $view->query->add_field($field->table_alias, $additional_field, $field_key, $params);
     }
   }
 

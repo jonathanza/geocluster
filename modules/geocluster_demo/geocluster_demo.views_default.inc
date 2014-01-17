@@ -173,7 +173,7 @@ function geocluster_demo_views_default_views() {
   $handler->display->display_options['fields']['field_place']['settings'] = array(
     'data' => 'full',
   );
-  $handler->display->display_options['fields']['field_place']['group_column'] = 'geocluster_index_4';
+  $handler->display->display_options['fields']['field_place']['group_column'] = 'geocluster_index_1';
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';
