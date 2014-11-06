@@ -58,8 +58,37 @@ class GeoclusterConfigViewsDisplayExtender extends views_plugin_display_extender
    */
   function query() {
     if ($this->get_option('geocluster_enabled')) {
+      $this->injectViewsGeoJsonPropertyFields();
       if ($algorithm = geocluster_init_algorithm($this->config)) {
         $algorithm->pre_execute();
+      }
+    }
+  }
+
+  /**
+   * Ensure the necessary fields for views geojson are set.
+   *
+   * If this display is a for Views GeoJson inject artificial fields that we can
+   * use as feature properties in our scripts.
+   */
+  protected function injectViewsGeoJsonPropertyFields() {
+    if (in_array($this->view->display_handler->get_option('style_plugin'), array('views_geojson_feed', 'views_geojson'))) {
+      $view = $this->get_view();
+      $js_property_fields = array(
+        'geocluster_ids' => 'geocluster_ids',
+        'geocluster_count' => 'geocluster_count',
+        'geocluster_lat' => 'geocluster_lat',
+        'geocluster_lon' => 'geocluster_lon',
+      );
+      foreach ($js_property_fields as $field => $js_property) {
+        $view->field['views_geojson_' . $field] = views_get_handler($this->get_view()->base_table, $field, 'field');
+        $view->field['views_geojson_' . $field]->options['label'] = $js_property;
+        $view->field['views_geojson_' . $field]->field = $field;
+        if ($view->field['views_geojson_' . $field] instanceof geocluster_handler_field_numeric) {
+          $view->field['views_geojson_' . $field]->options['separator'] = '';
+          $view->field['views_geojson_' . $field]->options['precision'] = 10;
+          $view->field['views_geojson_' . $field]->options['decimal'] = '.';
+        }
       }
     }
   }
