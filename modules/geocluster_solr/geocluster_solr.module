@@ -27,14 +27,18 @@ function geocluster_solr_geocluster_algorithm() {
  * Implements hook_search_api_data_type_info().
  */
 function geocluster_solr_search_api_data_type_info() {
-  return array(
+  $types = array(
     'geohash' => array(
       'name' => t('Geohash'),
     ),
-    'location' => array(
-      'name' => t('Location'),
-    ),
   );
+  // Add the location type if necessary.
+  if (!module_exists('search_api_location')) {
+    $types['location'] = array(
+      'name' => t('Location'),
+    );
+  }
+  return $types;
 }
 
 /**

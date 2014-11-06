@@ -106,9 +106,21 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
     $cluster_field_options = array(
       '' => '<none>',
     );
-    foreach ($handlers as $handle) {
-      if (!empty($handle->field_info['type']) && $handle->field_info['type'] == 'geofield') {
-        $cluster_field_options[$handle->options['id']] = (!empty($handle->options['label'])) ? $handle->options['label'] : $handle->options['id'];
+    foreach ($handlers as $handler) {
+      $field_info = NULL;
+      if (!empty($handler->field_info)) {
+        $field_info = $handler->field_info;
+      }
+      elseif ($this->is_entity_views_handler($handler)) {
+        // Strip the basic field name from the entity views handler field and
+        // fetch the field info for it.
+        $property = EntityFieldHandlerHelper::get_selector_field_name($handler->real_field);
+        if ($field_name = EntityFieldHandlerHelper::get_selector_field_name(substr($handler->real_field, 0, strpos($handler->real_field, ':' . $property)), ':')) {
+          $field_info = field_info_field($field_name);
+        }
+      }
+      if (!empty($field_info['type']) && $field_info['type'] == 'geofield') {
+        $cluster_field_options[$handler->options['id']] = (!empty($handler->options['label'])) ? $handler->options['label'] : $handler->options['id'];
       }
     }
     return $cluster_field_options;
@@ -155,5 +167,29 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
    */
   public function get_display() {
     return $this->config_backend->get_display();
+  }
+
+  /**
+   * Checks if a field handler class is handled by the entity module.
+   *
+   * @param object $field_handler_instance
+   *   The field handler instance to check.
+   *
+   * @return bool
+   *   TRUE if the field is handled by the entity module views integration.
+   */
+  public function is_entity_views_handler($field_handler_instance) {
+    $static_cache = &drupal_static(__METHOD__, array());
+    $handler_class = get_class($field_handler_instance);
+
+    if (!isset($static_cache[$handler_class])) {
+      $static_cache[$handler_class] = FALSE;
+      foreach (entity_views_get_field_handlers() as $field_handler) {
+        if ($field_handler_instance instanceof $field_handler) {
+          return $static_cache[$handler_class] = TRUE;
+        }
+      }
+    }
+    return $static_cache[$handler_class];
   }
 }

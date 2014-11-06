@@ -72,6 +72,10 @@ class GeoclusterSearchApiViewsQuery extends SearchApiViewsQuery {
       // Finally, add all rows to the Views result set.
       $view->result = array_values($rows);
     }
+    else {
+      // Let the parent class handle non-geocluster views.
+      parent::addResults($results, $view);
+    }
   }
 
   protected function prepareEntityRow(&$row, $result, $id, &$missing, &$items, &$ids) {
