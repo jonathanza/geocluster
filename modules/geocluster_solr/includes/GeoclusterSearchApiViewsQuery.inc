@@ -22,59 +22,24 @@ class GeoclusterSearchApiViewsQuery extends SearchApiViewsQuery {
    * view.
    */
   protected function addResults(array $results, $view) {
+    // Let the original handler process the results first.
+    parent::addResults($results, $view);
+
+    // Do postprocessing if necessary.
     if ($geocluster = geocluster_get_algorithm($view)) {
-      $rows = array();
-      $missing = array();
-      $items = array();
-      $ids = array();
-
-      $handler = $geocluster->getFieldHandler();
-      $this->fields[$handler->real_field] = TRUE;
-
-      // First off, we try to gather as much field values as possible without
-      // loading any items.
-      foreach ($results as $id => $result) {
-        $row = array();
-
-        //$this->prepareEntityRow($row, $result, $id, $missing, $items, $ids);
-
-        if (isset($result['geocluster_count'])) {
-          $row = $result;
-        }
-        else {
-          $this->prepareEntityRow($row, $result, $id, $missing, $items, $ids);
-        }
-
-        // Save the row values for adding them to the Views result afterwards.
-        $rows[$id] = (object) $row;
-      }
-
-      // Load items of those rows which haven't got all field values, yet.
-      if (!empty($ids)) {
-        $items += $this->index->loadItems($ids);
-        // $items now includes loaded items, and those already passed in the
-        // search results.
-        foreach ($items as $id => $item) {
-          // Extract item properties.
-          $wrapper = $this->index->entityWrapper($item, FALSE);
-          $rows[$id]->_entity_properties += $this->extractFields($wrapper, $missing[$id]);
-          $rows[$id]->entity = $item;
-
-
-          $rows[$id]->geocluster_count = 1;
-          $location = $wrapper->{$handler->real_field}->value();
-          $rows[$id]->geocluster_lat = $location['lat'];
-          $rows[$id]->geocluster_lon = $location['lon'];
-          $rows[$id]->geocluster_ids = $id;
+      foreach ($view->result as $views_result) {
+        $entity_id = $views_result->entity;
+        // Add the related solr geocluster data to the views result. Those data
+        // can be used with the geocluster views fields.
+        if (isset($results[$entity_id])) {
+          $views_result->clustered = $results[$entity_id]['clustered'];
+          $views_result->geocluster_ids = $results[$entity_id]['geocluster_ids'];
+          $views_result->geocluster_count = $results[$entity_id]['geocluster_count'];
+          $views_result->geocluster_geometry = $results[$entity_id]['geocluster_geometry'];
+          $views_result->geocluster_lat = $results[$entity_id]['geocluster_lat'];
+          $views_result->geocluster_lon = $results[$entity_id]['geocluster_lon'];
         }
       }
-
-      // Finally, add all rows to the Views result set.
-      $view->result = array_values($rows);
-    }
-    else {
-      // Let the parent class handle non-geocluster views.
-      parent::addResults($results, $view);
     }
   }
 
