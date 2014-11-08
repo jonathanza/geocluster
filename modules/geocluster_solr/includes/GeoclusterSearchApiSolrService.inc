@@ -375,8 +375,8 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
       $stats_field_lat = $fields[$stats_field_name . ':lat'];
       $stats_field_lon = $fields[$stats_field_name . ':lon'];
       $stats = $response->stats->stats_fields;
-      $stats_lat = $stats->{$stats_field_lat}->facets->{$grouped_field};
-      $stats_lon = $stats->{$stats_field_lon}->facets->{$grouped_field};
+      $stats_lat = ((isset($stats->{$stats_field_lat}->facets->{$grouped_field})) ? $stats->{$stats_field_lat}->facets->{$grouped_field} : NULL);
+      $stats_lon = ((isset($stats->{$stats_field_lon}->facets->{$grouped_field})) ? $stats->{$stats_field_lon}->facets->{$grouped_field} : NULL);
 
       foreach ($groups as $key => &$group) {
 
@@ -396,16 +396,17 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
         $result['geocluster_ids'] = $id;
         $result['geocluster_count'] = $group->doclist->numFound;
         $total_items += $group->doclist->numFound;
-        $geohash = $group->groupValue;
-        // TODO: improve accuracy?
-        // $location = geoPHP::load($geohash, 'geohash');
-        $location = new Point(
-          $stats_lon->{$geohash}->mean,
-          $stats_lat->{$geohash}->mean
-        );
-        $result['geocluster_geometry'] = $location;
-        $result['geocluster_lat'] = $location->getY();
-        $result['geocluster_lon'] = $location->getX();
+        if ($geohash = $group->groupValue) {
+          // TODO: improve accuracy?
+          // $location = geoPHP::load($geohash, 'geohash');
+          $location = new Point(
+            $stats_lon->{$geohash}->mean,
+            $stats_lat->{$geohash}->mean
+          );
+          $result['geocluster_geometry'] = $location;
+          $result['geocluster_lat'] = $location->getY();
+          $result['geocluster_lon'] = $location->getX();
+        }
 
         $results_by_geohash[$geohash] = array(
           $id => &$result,
@@ -427,7 +428,7 @@ class GeoclusterSearchApiSolrService extends SearchApiSolrService {
 
     }
     else {
-      parent::postQuery($result, $query, $response);
+      parent::postQuery($results, $query, $response);
     }
   }
 }

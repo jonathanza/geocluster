@@ -32,12 +32,18 @@ class GeoclusterSearchApiViewsQuery extends SearchApiViewsQuery {
         // Add the related solr geocluster data to the views result. Those data
         // can be used with the geocluster views fields.
         if (isset($results[$entity_id])) {
-          $views_result->clustered = $results[$entity_id]['clustered'];
-          $views_result->geocluster_ids = $results[$entity_id]['geocluster_ids'];
-          $views_result->geocluster_count = $results[$entity_id]['geocluster_count'];
-          $views_result->geocluster_geometry = $results[$entity_id]['geocluster_geometry'];
-          $views_result->geocluster_lat = $results[$entity_id]['geocluster_lat'];
-          $views_result->geocluster_lon = $results[$entity_id]['geocluster_lon'];
+          // Copy these properties from the raw result to the views result.
+          $properties = array(
+            'clustered',
+            'geocluster_ids',
+            'geocluster_count',
+            'geocluster_geometry',
+            'geocluster_lat',
+            'geocluster_lon',
+          );
+          foreach ($properties as $property) {
+            $views_result->{$property} = ((isset($results[$entity_id][$property])) ? $results[$entity_id][$property] : NULL);
+          }
         }
       }
     }
