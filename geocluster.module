@@ -90,14 +90,18 @@ function geocluster_init_algorithm($config_backend) {
   // Add customizations based on style plugin.
   // @todo: make this a separate function or hook
   $style_plugin_name = $config_backend->get_option('style_plugin');
+  $view->init_style();
   switch ($style_plugin_name) {
     case 'leaflet':
       $map = $view->style_plugin->options['map'];
-      $info =  leaflet_map_get_info($map);
+      $info = leaflet_map_get_info($map);
       $zoom = $info['settings']['zoom'];
       break;
+
     case 'views_geojson':
+    case 'views_geojson_feed':
       break;
+
     case 'geofield_map':
       $style_options = $view->display_handler->display->display_options['style_options'];
       $zoom = $style_options['geofield_map_zoom'];
@@ -111,7 +115,7 @@ function geocluster_init_algorithm($config_backend) {
   $algorithm = $geocluster_options['algorithm'];
 
   if ($class = ctools_plugin_load_class('geocluster', 'algorithm', $algorithm, 'handler')) {
-    if($algorithm_class = new $class($config_backend, $cluster_distance, $zoom, $cluster_field)) {
+    if ($algorithm_class = new $class($config_backend, $cluster_distance, $zoom, $cluster_field)) {
       $config_backend->set_option(GEOCLUSTER_ALGORITHM_OPTION, $algorithm_class);
       return $algorithm_class;
     }
@@ -119,7 +123,6 @@ function geocluster_init_algorithm($config_backend) {
       throw new Exception("algorithm not found: " . $algorithm);
     }
   }
-
 }
 
 
@@ -169,12 +172,14 @@ function geocluster_views_post_execute_query(&$view) {
 function geocluster_views_geojson_render_fields_alter(&$feature, $view, $row, $index) {
   if (!empty($row->geocluster_count) && $row->geocluster_count > 1) {
     $feature['clustered'] = TRUE;
-    $feature['cluster_items'] = $row->geocluster_count;
+    $feature['geocluster_count'] = $row->geocluster_count;
   }
 }
 
 /**
  * Implements theme_preprocess_leaflet_map().
+ *
+ * @depecrated in favor of geocluster_leaflet_views_alter_points_data_alter().
  */
 function geocluster_preprocess_leaflet_map($variables) {
   // Adds the geocluster leaflet marker javascript.
@@ -183,6 +188,56 @@ function geocluster_preprocess_leaflet_map($variables) {
     drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.marker.js',
     // Add our script after leaflet.drupal.js.
     array('weight' => 5)
+  );
+}
+
+/**
+ * Implements hook_leaflet_views_alter_points_data_alter().
+ *
+ * Since the theme hooks don't seem to invoked always this is the saver method
+ * to inject our data.
+ */
+function geocluster_leaflet_views_alter_points_data_alter(&$result, &$points) {
+  static $script_added;
+  if (!empty($result->geocluster_count) && $result->geocluster_count > 1) {
+    foreach ($points as $k => $point) {
+      $points[$k]['clustered'] = TRUE;
+      $points[$k]['geocluster_count'] = $result->geocluster_count;
+    }
+  }
+  if (isset($script_added)) {
+    $script_added = TRUE;
+    drupal_add_js(
+      drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.marker.js',
+      // Add our script after leaflet.drupal.js.
+      array('weight' => 5)
+    );
+  }
+}
+
+/**
+ * Implements hook_leaflet_map_prebuild_alter().
+ */
+function geocluster_leaflet_map_prebuild_alter(&$settings) {
+  drupal_add_js(
+    drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.bbox.js',
+    array(
+      // Add our script after leaflet.bbox.js.
+      'weight' => 99,
+    )
+  );
+}
+
+/**
+ * Implements hook_leaflet_geojson_add_bbox_strategy_alter().
+ */
+function geocluster_leaflet_geojson_add_bbox_strategy_alter($view) {
+  drupal_add_js(
+    drupal_get_path('module', 'geocluster') . '/js/geocluster.leaflet.bbox.js',
+    array(
+      // Add our script after leaflet.bbox.js.
+      'weight' => 99,
+    )
   );
 }
 

@@ -74,6 +74,12 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
         '#default_value' => $geocluster_options['cluster_distance'] ? $geocluster_options['cluster_distance'] : GEOCLUSTER_DEFAULT_DISTANCE,
         '#description' => t('Specify the cluster distance.'),
       );
+      $more_form['geocluster_options']['enable_bbox_support'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Enable bbox support'),
+        '#default_value' => !empty($geocluster_options['enable_bbox_support']),
+        '#description' => t('If enabled available Views GeoJSON bbox support will be enhanced.'),
+      );
     }
     $form = $more_form + $form;
   }

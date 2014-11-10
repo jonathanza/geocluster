@@ -4,8 +4,8 @@
   Drupal.leafletBBox.geoJSONOptions = {
 
     pointToLayer: function(featureData, latlng) {
-      if (featureData.properties.cluster_items > 1) {
-        var number = featureData.properties.cluster_items;
+      if (featureData.properties.geocluster_count > 1) {
+        var number = featureData.properties.geocluster_count;
           /*
         if (number >= 1000) {
           number = number.toString().substring(0, number.toString().length -3) + 'k';
@@ -38,7 +38,7 @@
     onEachFeature: function(featureData, layer) {
       var popupText = featureData.properties.name;
 
-      if (featureData.properties.cluster_items > 1) {
+      if (featureData.properties.geocluster_count > 1) {
         layer.on('click', function(e) {
           Drupal.leafletBBox.geoJSONOptions.clickOnClustered(e, featureData, layer);
         });

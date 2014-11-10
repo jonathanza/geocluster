@@ -40,59 +40,33 @@
 
   Drupal.leaflet._old_create_point = Drupal.leaflet.create_point;
 
-  Drupal.leaflet.create_point = function(marker) {
+  Drupal.leaflet.create_point = function(marker, lMap) {
     // var point = Drupal.leaflet._old_create_point(marker);
-    // point.options.icon.options.number = marker.cluster_items || 10;
+    // point.options.icon.options.number = marker.geocluster_count || 10;
     // return point;
 
-    var latLng = new L.LatLng(marker.lat, marker.lon);
-    this.bounds.push(latLng);
-    var lMarker;
-
-    if (marker.clustered) {
-      marker.icon = Object();
-      marker.icon.clustered = true;
+    // If this is a clustered marker adjust some settings.
+    if (marker.geocluster_count > 1) {
+      marker.html = '<div><span>' + marker.geocluster_count + '</span></div>';
+      marker.html_class =  'marker-cluster' + c;
     }
 
-    if (marker.icon) {
-      if (marker.icon.clustered) {
-        // var icon = new L.NumberedDivIcon({number: marker.cluster_items || 1});
+    var lMarker = Drupal.leaflet._old_create_point(marker, lMap);
 
-          var c = ' marker-cluster-';
-          if (marker.cluster_items < 10) {
-              c += 'small';
-          } else if (marker.cluster_items < 100) {
-              c += 'medium';
-          } else {
-              c += 'large';
-          }
-        var icon = new L.DivIcon({ html: '<div><span>' + marker.cluster_items + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
+    // If this is a clustered marker inject our own icon.
+    if (marker.geocluster_count > 1) {
+      // var icon = new L.NumberedDivIcon({number: marker.geocluster_count || 1});
 
+      var c = ' marker-cluster-';
+      if (marker.geocluster_count < 10) {
+        c += 'small';
+      } else if (marker.geocluster_count < 100) {
+        c += 'medium';
+      } else {
+        c += 'large';
       }
-      else {
-        var icon = new L.Icon({iconUrl: marker.icon.iconUrl});
-      }
-      // override applicable marker defaults
-      if (marker.icon.iconSize) {
-        icon.options.iconSize = new L.Point(parseInt(marker.icon.iconSize.x), parseInt(marker.icon.iconSize.y));
-      }
-      if (marker.icon.iconAnchor) {
-        icon.options.iconAnchor = new L.Point(parseFloat(marker.icon.iconAnchor.x), parseFloat(marker.icon.iconAnchor.y));
-      }
-      if (marker.icon.popupAnchor) {
-        icon.options.popupAnchor = new L.Point(parseFloat(marker.icon.popupAnchor.x), parseFloat(marker.icon.popupAnchor.y));
-      }
-      if (marker.icon.shadowUrl !== undefined) {
-        icon.options.shadowUrl = marker.icon.shadowUrl;
-      }
-      if (marker.icon.shadowSize) {
-        icon.options.shadowSize = new L.Point(parseInt(marker.icon.shadowSize.x), parseInt(marker.icon.shadowSize.y));
-      }
-
-      lMarker = new L.Marker(latLng, {icon:icon});
-    }
-    else {
-      lMarker = new L.Marker(latLng);
+      var icon = new L.DivIcon({ html: '<div><span>' + marker.geocluster_count + '</span></div>', className: 'marker-cluster' + c, iconSize: new L.Point(40, 40) });
+      lMarker.setIcon(icon)
     }
     return lMarker;
   }
