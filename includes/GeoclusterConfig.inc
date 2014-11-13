@@ -88,20 +88,22 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
   }
 
   function options_submit(&$form, &$form_state) {
-    $this->set_option('geocluster_enabled', $form_state['values']['geocluster_enabled']);
-    $this->set_option('geocluster_options', $form_state['values']['geocluster_options']);
+    $this->set_option('geocluster_enabled', !empty($form_state['values']['geocluster_enabled']));
+    if (isset($form_state['values']['geocluster_options'])) {
+      $geocluster_options = $form_state['values']['geocluster_options'];
+      $this->set_option('geocluster_options', $geocluster_options);
 
-    $geocluster_options = $form_state['values']['geocluster_options'];
-    if ($geocluster_options['algorithm'] == 'geocluster_mysql') {
-      if (!$this->get_option('group_by')) {
-        $this->set_option('group_by', TRUE);
-        drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>enabled</em> as a requirement by the MySQL-based geocluster algorithm.'));
+      if ($geocluster_options['algorithm'] == 'geocluster_mysql') {
+        if (!$this->get_option('group_by')) {
+          $this->set_option('group_by', TRUE);
+          drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>enabled</em> as a requirement by the MySQL-based geocluster algorithm.'));
+        }
       }
-    }
-    else if ($geocluster_options['algorithm'] == 'geocluster_php') {
-      if ($this->get_option('group_by')) {
-        $this->set_option('group_by', FALSE);
-        drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>disabled</em> as a requirement by the PHP-based geocluster algorithm.'));
+      elseif ($geocluster_options['algorithm'] == 'geocluster_php') {
+        if ($this->get_option('group_by')) {
+          $this->set_option('group_by', FALSE);
+          drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>disabled</em> as a requirement by the PHP-based geocluster algorithm.'));
+        }
       }
     }
   }
