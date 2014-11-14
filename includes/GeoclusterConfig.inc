@@ -93,16 +93,27 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
       $geocluster_options = $form_state['values']['geocluster_options'];
       $this->set_option('geocluster_options', $geocluster_options);
 
-      if ($geocluster_options['algorithm'] == 'geocluster_mysql') {
-        if (!$this->get_option('group_by')) {
-          $this->set_option('group_by', TRUE);
-          drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>enabled</em> as a requirement by the MySQL-based geocluster algorithm.'));
+      // If geocluster is enabled make sure the aggregation settings are set
+      // properly.
+      if ($this->get_option('geocluster_enabled')) {
+        if ($geocluster_options['algorithm'] == 'geocluster_mysql') {
+          if (!$this->get_option('group_by')) {
+            $this->set_option('group_by', TRUE);
+            drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>enabled</em> as a requirement by the MySQL-based geocluster algorithm.'));
+          }
+        }
+        elseif ($geocluster_options['algorithm'] == 'geocluster_php') {
+          if ($this->get_option('group_by')) {
+            $this->set_option('group_by', FALSE);
+            drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>disabled</em> as a requirement by the PHP-based geocluster algorithm.'));
+          }
         }
       }
-      elseif ($geocluster_options['algorithm'] == 'geocluster_php') {
-        if ($this->get_option('group_by')) {
+      else {
+        // Ensure aggregation is disabled if it's not supported by this query
+        // handler.
+        if ($this->get_display()->query()->get_aggregation_info() === NULL &&  $this->get_option('group_by')) {
           $this->set_option('group_by', FALSE);
-          drupal_set_message(t('The <strong>use aggregation</strong> setting has been <em>disabled</em> as a requirement by the PHP-based geocluster algorithm.'));
         }
       }
     }
