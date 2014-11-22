@@ -111,8 +111,9 @@ class GeoclusterConfig implements GeoclusterConfigBackendInterface {
       }
       else {
         // Ensure aggregation is disabled if it's not supported by this query
-        // handler.
-        if ($this->get_display()->query()->get_aggregation_info() === NULL &&  $this->get_option('group_by')) {
+        // handler. It can happen that a display doesn't return a query object.
+        $query = $this->get_display()->query();
+        if (!empty($query) && $query->get_aggregation_info() === NULL &&  $this->get_option('group_by')) {
           $this->set_option('group_by', FALSE);
         }
       }
